@@ -27,6 +27,7 @@ class Audio extends Component {
       gainNode: null,
       currentSource: null,
       bufferLength: null,
+      duration: 0,
       tracks: [
         rise,
         fantastic
@@ -45,7 +46,6 @@ class Audio extends Component {
       canvasCx: null,
       canvasCy: null,
       canvasCoord: null,
-      canvasRadius: null,
 
       /**
        * Framer Context
@@ -58,6 +58,7 @@ class Audio extends Component {
       framerIndex: 0,
       framerLoadingAngle: 0,
       framerMaxTickSize: null,
+      framerTicks: null,
 
       /**
        * Scene Context
@@ -66,7 +67,7 @@ class Audio extends Component {
       sceneMinSize: 740,
       sceneOptimiseHeight: 982,
       sceneInProcess: false,
-      sceneRadius: null,
+      sceneRadius: 250,
 
       /**
        * Tracker Context
@@ -77,6 +78,14 @@ class Audio extends Component {
       trackerAngle: 0,
       trackerAnimationCount: 10,
       trackerPressButton: false,
+      trackerAnimatedInProgress: false,
+      trackerAnimateId: null,
+      trackerR: null,
+
+      /**
+       * Controls Context
+       */
+      timeControl: {},
 
       /**
        * Misc
@@ -107,6 +116,13 @@ class Audio extends Component {
     this.drawArc = this.drawArc.bind(this)
     // @Framer
     this.framerInit = this.framerInit.bind(this)
+    this.framerDraw = this.framerDraw.bind(this)
+    this.framerDrawTick = this.framerDrawTick.bind(this)
+    this.framerDrawTicks = this.framerDrawTicks.bind(this)
+    this.framerDrawEdging = this.framerDrawEdging.bind(this)
+    this.framerGetTicks = this.framerGetTicks.bind(this)
+    this.framerGetTickPoints = this.framerGetTickPoints.bind(this)
+    this.framerSetLoadingPercent = this.framerSetLoadingPercent.bind(this)
     // @Scene
     this.sceneInit = this.sceneInit.bind(this)
     this.startSceneRender = this.startSceneRender.bind(this)
@@ -115,12 +131,20 @@ class Audio extends Component {
     this.sceneDraw = this.sceneDraw.bind(this)
     // @Tracker
     this.trackerInit = this.trackerInit.bind(this)
+    this.trackerStartAnimation = this.trackerStartAnimation.bind(this)
+    this.trackerStopAnimation = this.trackerStopAnimation.bind(this)
+    this.trackerIsInsideOfSmallCircle = this.trackerIsInsideOfSmallCircle.bind(this)
+    this.trackerIsOusideOfBigCircle = this.trackerIsOusideOfBigCircle.bind(this)
+    // @Controls
+    this.controlsDraw = this.controlsDraw.bind(this)
+    this.controlsGetQuadrant = this.controlsGetQuadrant.bind(this)
   }
 
   showPlayer() {
     this.setState({ playerInitalized: true})
 
-    this.initCanvas()
+    this.framerSetLoadingPercent(1)
+    this.sceneInit()
   }
 
   startPlayer() {
@@ -217,9 +241,9 @@ class Audio extends Component {
     } = this.state
 
     if (musicIndex >= (tracks.length - 1)) {
-      musicIndex = 0;
+      musicIndex = 0
     } else {
-      musicIndex = + 1;
+      musicIndex = + 1
     }
 
     this.switchSong(musicIndex)
@@ -232,9 +256,9 @@ class Audio extends Component {
     } = this.state
 
     if (musicIndex <= 0) {
-      musicIndex = tracks.length - 1;
+      musicIndex = tracks.length - 1
     } else {
-      musicIndex = - 1;
+      musicIndex = - 1
     }
 
     this.switchSong(musicIndex)
@@ -247,25 +271,25 @@ class Audio extends Component {
     } = this.state
 
     if (currentSource) {
-      currentSource.disconnect();
+      currentSource.disconnect()
       this.setState({ playing: false, musicIndex })
     }
 
-    this.loadSong(tracks[musicIndex]);
+    this.loadSong(tracks[musicIndex])
   }
 
-  initCanvas() {
+  canvasConfigure() {
     let { canvas, canvasContext } = this.state
-    canvas = document.querySelector('#Player-canvas');
-    canvasContext = canvas.getContext('2d');
-    canvasContext.strokeStyle = '#FE4365';
+    canvas = document.querySelector('#Player-canvas')
+    canvasContext = canvas.getContext('2d')
+    canvasContext.strokeStyle = '#61dafb'
 
     this.setState({
       canvas,
       canvasContext
     })
 
-    this.calculateSize();
+    this.calculateSize()
   }
 
   calculateSize() {
@@ -274,21 +298,21 @@ class Audio extends Component {
     const minSize = 740
     const optimiseHeight = 982
 
-    const canvasScaleCoef = Math.max(0.5, 740 / optimiseHeight);
+    const canvasScaleCoef = Math.max(0.5, 740 / optimiseHeight)
 
-    const size = Math.max(minSize, 1 /*document.body.clientHeight */);
-    canvas.setAttribute('width', size);
-    canvas.setAttribute('height', size);
-    //this.canvas.style.marginTop = -size / 2 + 'px';
-    //this.canvas.style.marginLeft = -size / 2 + 'px';
+    const size = Math.max(minSize, 1 /*document.body.clientHeight */)
+    canvas.setAttribute('width', size)
+    canvas.setAttribute('height', size)
+    //this.canvas.style.marginTop = -size / 2 + 'px'
+    //this.canvas.style.marginLeft = -size / 2 + 'px'
 
-    const canvasWidth = size;
-    const canvasHeight = size;
+    const canvasWidth = size
+    const canvasHeight = size
 
-    const canvasRadius = (size - padding * 2) / 2;
-    const canvasCx = canvasRadius + padding;
-    const canvasCy = canvasRadius + padding;
-    const canvasCoord = canvas.getBoundingClientRect();
+    const sceneRadius = (size - padding * 2) / 2
+    const canvasCx = sceneRadius + padding
+    const canvasCy = sceneRadius + padding
+    const canvasCoord = canvas.getBoundingClientRect()
 
     this.setState({
       canvas,
@@ -298,7 +322,7 @@ class Audio extends Component {
       canvasCx,
       canvasCy,
       canvasCoord,
-      canvasRadius
+      sceneRadius
     })
   }
 
@@ -308,22 +332,25 @@ class Audio extends Component {
       sceneRadius,
       trackerInnerDelta,
       scenePadding,
-      trackerLineWidth
+      trackerLineWidth,
+      trackerAngle
     } = this.state
 
     canvasContext.save()
-    canvasContext.strokeStyle = 'rgba(254, 67, 101, 0.8)'
+    canvasContext.strokeStyle = 'rgba(97, 218, 251, 0.8)'
     canvasContext.beginPath()
     canvasContext.lineWidth = trackerLineWidth
 
-    this.r = sceneRadius - (trackerInnerDelta + trackerLineWidth / 2)
+    const trackerR = sceneRadius - (trackerInnerDelta + trackerLineWidth / 2)
     canvasContext.arc(
       sceneRadius + scenePadding,
       sceneRadius + scenePadding,
-      this.r, 0, this.angle, false
+      trackerR, 0, trackerAngle, false
     )
     canvasContext.stroke()
     canvasContext.restore()
+
+    this.setState({ trackerR })
   }
 
   framerInit() {
@@ -333,112 +360,444 @@ class Audio extends Component {
       framerCountTicks
     } = this.state
 
-    const framerMaxTickSize = framerTickSize * 9 * canvasScaleCoef;
-    framerCountTicks = 360 * canvasScaleCoef;
+    const framerMaxTickSize = framerTickSize * 9 * canvasScaleCoef
+    framerCountTicks = 360 * canvasScaleCoef
 
     this.setState({ framerCountTicks, framerMaxTickSize})
   }
 
+  initTimeHandler() {
+    let {
+      audioContext,
+      timeControl
+    } = this.state
+
+    setTimeout(() => {
+      const rawTime = parseInt(audioContext.currentTime || 0)
+      const secondsInMin = 60
+      let min = parseInt(rawTime / secondsInMin)
+      let seconds = rawTime - min * secondsInMin
+      if (min < 10) {
+        min = '0' + min
+      }
+      if (seconds < 10) {
+        seconds = '0' + seconds
+      }
+      const time = min + ':' + seconds
+      timeControl.textContent = time
+
+      this.setState({ timeControl })
+
+      this.initTimeHandler()
+    }, 300)
+  }
+
   sceneInit() {
-    this.initCanvas();
-    this.initHandlers();
+    this.canvasConfigure()
+    this.sceneInitHandlers()
 
-    this.framerInit();
-    this.trackerInit();
-    // Controls.init(this);
+    this.framerInit()
+    this.trackerInit()
+    this.initTimeHandler()
 
-    this.startSceneRender();
+    this.startSceneRender()
+  }
+
+  sceneInitHandlers() {
+    window.onresize = () => {
+      this.canvasConfigure()
+      this.framerInit()
+      this.sceneRender()
+    };
   }
 
   startSceneRender() {
     this.setState({ sceneInProcess: true })
-    this.sceneRender();
+    this.sceneRender()
   }
 
   sceneRender() {
     requestAnimationFrame(() => {
-      this.clear();
-      this.draw();
+      this.sceneClear()
+      this.sceneDraw()
       if (this.state.sceneInProcess) {
-        this.sceneRender();
+        this.sceneRender()
       }
-    });
+    })
   }
 
   sceneClear() {
-    this.state.canvasContext.clearRect(0, 0, this.width, this.height);
+    this.state.canvasContext.clearRect(0, 0, this.width, this.height)
   }
 
   sceneDraw() {
-    // Framer.draw();
-    // Tracker.draw();
-    // Controls.draw();
+    this.framerDraw()
+    this.trackerDraw()
+    this.controlsDraw()
+  }
+
+  controlsDraw() {
+    const {
+      canvasContext,
+      trackerR,
+      trackerAngle,
+      sceneRadius,
+      scenePadding
+    } = this.state
+
+    canvasContext.save()
+    canvasContext.beginPath()
+    canvasContext.fillStyle = 'rgba(97, 218, 251, 0.85)'
+    canvasContext.lineWidth = 1
+    let x = trackerR / Math.sqrt(Math.pow(Math.tan(trackerAngle), 2) + 1)
+    let y = Math.sqrt(trackerR * trackerR - x * x)
+    if (this.controlsGetQuadrant() === 2) {
+      x = -x
+    }
+    if (this.controlsGetQuadrant() === 3) {
+      x = -x
+      y = -y
+    }
+    if (this.controlsGetQuadrant() === 4) {
+      y = -y
+    }
+    canvasContext.arc(sceneRadius + scenePadding + x, sceneRadius + scenePadding + y, 10, 0, Math.PI * 2, false)
+    canvasContext.fill()
+    canvasContext.restore()
+
+    this.setState({ canvasContext })
+  }
+
+  controlsGetQuadrant() {
+    const { trackerAngle } = this.state
+
+  if (0 <= trackerAngle && trackerAngle < Math.PI / 2) {
+    return 1;
+  }
+  if (Math.PI / 2 <= trackerAngle && trackerAngle < Math.PI) {
+    return 2;
+  }
+  if (Math.PI < trackerAngle && trackerAngle < Math.PI * 3 / 2) {
+    return 3;
+  }
+  if (Math.PI * 3 / 2 <= trackerAngle && trackerAngle <= Math.PI * 2) {
+    return 4;
+  }
+}
+
+  framerDraw() {
+    this.framerDrawTicks()
+    this.framerDrawEdging()
+  }
+
+  framerDrawTicks() {
+    const {
+      canvasContext
+    } = this.state
+
+    let {
+      framerTicks
+    } = this.state
+
+    canvasContext.save()
+    canvasContext.beginPath()
+    canvasContext.lineWidth = 1
+    framerTicks = this.framerGetTicks([0, 90])
+    for (var i = 0, len = framerTicks.length; i < len; ++i) {
+      var tick = framerTicks[i]
+      this.framerDrawTick(tick.x1, tick.y1, tick.x2, tick.y2)
+    }
+    canvasContext.restore()
+  }
+
+  framerDrawTick(x1 = null, y1 = null, x2 = null, y2 = null) {
+    const {
+      canvasCx,
+      canvasCy,
+      canvasContext
+    } = this.state
+
+    const dx1 = parseInt(canvasCx + x1)
+    const dy1 = parseInt(canvasCy + y1)
+
+    const dx2 = parseInt(canvasCx + x2)
+    const dy2 = parseInt(canvasCy + y2)
+
+    const gradient = canvasContext.createLinearGradient(dx1, dy1, dx2, dy2)
+    gradient.addColorStop(0, '#61dafb')
+    gradient.addColorStop(0.6, '#61dafb')
+    gradient.addColorStop(1, '#F5F5F5')
+    canvasContext.beginPath()
+    canvasContext.strokeStyle = gradient
+    canvasContext.lineWidth = 2
+    canvasContext.moveTo(canvasCx + x1, canvasCx + y1)
+    canvasContext.lineTo(canvasCx + x2, canvasCx + y2)
+    canvasContext.stroke()
+
+    this.setState({ canvasContext })
+  }
+
+  framerGetTicks(animationParams) {
+    this.setState({ framerTickSize: 10 })
+
+    const {
+      framerTickSize,
+      framerFrequencyData,
+      canvasScaleCoef,
+      framerTransformScale,
+      sceneRadius
+    } = this.state
+
+    const ticks = this.framerGetTickPoints()
+    let x1, y1, x2, y2, m = [], tick, k
+    const lesser = 160
+    const allScales = []
+    for (let i = 0, len = ticks.length; i < len; ++i) {
+      const coef = 1 - i / (len * 2.5)
+      let delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
+      if (delta < 0) {
+        delta = 0
+      }
+      tick = ticks[i]
+      if (animationParams[0] <= tick.angle && tick.angle <= animationParams[1]) {
+        k = sceneRadius / (sceneRadius - this.getSize(tick.angle, animationParams[0], animationParams[1]) - delta)
+      } else {
+        k = sceneRadius / (sceneRadius - (framerTickSize + delta))
+      }
+      x1 = tick.x * (sceneRadius - framerTickSize)
+      y1 = tick.y * (sceneRadius - framerTickSize)
+      x2 = x1 * k
+      y2 = y1 * k
+      m.push({ x1: x1, y1: y1, x2: x2, y2: y2 })
+      if (i < 20) {
+        var scale = delta / 50
+        scale = scale < 1 ? 1 : scale
+        allScales.push(scale)
+      }
+    }
+    var sum = allScales.reduce((pv, cv) => { return pv + cv }, 0) / allScales.length
+    if (framerTransformScale) {
+      this.canvas.style.transform = 'scale(' + sum + ')'
+    }
+    return m
+  }
+
+  framerGetTickPoints() {
+    const {
+      framerCountTicks
+    } = this.state
+
+    const coords = [], step = this.PI / framerCountTicks
+    for (let deg = 0; deg < this.PI; deg += step) {
+      const rad = deg * Math.PI / (this.PI / 2)
+      coords.push({ x: Math.cos(rad), y: -Math.sin(rad), angle: deg })
+    }
+    return coords
+  }
+
+  framerDrawEdging() {
+    const {
+      trackerLineWidth,
+      trackerInnerDelta,
+      canvasCx,
+      canvasCy,
+      sceneRadius,
+      canvasContext,
+      scenePadding,
+      framerLoadingAngle
+    } = this.state
+
+    canvasContext.save()
+    canvasContext.beginPath()
+    canvasContext.strokeStyle = 'rgba(97, 218, 251, 0.5)'
+    canvasContext.lineWidth = 1
+
+    var offset = trackerLineWidth / 2
+    canvasContext.moveTo(scenePadding + 2 * sceneRadius - trackerInnerDelta - offset, scenePadding + sceneRadius)
+    canvasContext.arc(canvasCx, canvasCy, sceneRadius - trackerInnerDelta - offset, 0, framerLoadingAngle, false)
+
+    canvasContext.stroke()
+    canvasContext.restore()
+
+    this.setState({ canvasContext })
+  }
+
+  framerSetLoadingPercent(percent) {
+    this.setState({ framerLoadingAngle: percent * 2 * Math.PI })
   }
 
   trackerInit() {
     let {
       canvas,
-      canvasContext,
       trackerAngle,
-      trackerPrevAngle,
+      trackerPressButton,
+      trackerAnimatedInProgress,
+      audioContext,
+      currentSource,
+      sceneInProcess
+    } = this.state
+
+    canvas.addEventListener('mousedown', event => {
+      if (this.trackerIsInsideOfSmallCircle(event) || this.trackerIsOusideOfBigCircle(event)) {
+        return
+      }
+      this.setState({ trackerPressButton: true, trackerPrevAngle: trackerAngle})
+      this.trackerStopAnimation()
+      this.setState({ trackerAnimatedInProgress: true})
+      this.trackerCalculateAngle(event)
+    })
+
+    window.addEventListener('mouseup', () => {
+      if (!trackerPressButton) {
+        return
+      }
+      var id = setInterval(() => {
+        if (!trackerAnimatedInProgress) {
+          this.setState({ trackerPressButton: false })
+          audioContext.currentTime = trackerAngle / (2 * Math.PI) * currentSource.buffer.duration
+
+          clearInterval(id)
+        }
+      }, 100)
+    })
+
+    window.addEventListener('mousemove', event =>  {
+      if (trackerAnimatedInProgress) {
+        return
+      }
+      if (trackerPressButton && sceneInProcess) {
+        this.trackerCalculateAngle(event)
+      }
+    })
+  }
+
+  trackerDraw() {
+    const {
+      currentSource,
+      audioContext,
       trackerPressButton
     } = this.state
 
-    canvas.addEventListener('mousedown', function (e) {
-      if (this.trackerIsInsideOfSmallCircle(e) || this.trackerIsOusideOfBigCircle(e)) {
-        return;
-      }
-      trackerPrevAngle = trackerAngle;
-      trackerPressButton = true;
-      that.stopAnimation();
-      that.calculateAngle(e, true);
-    });
+    if (!currentSource.buffer) {
+      return;
+    }
+    if (!trackerPressButton) {
+      const angle = audioContext.currentTime / currentSource.buffer.duration * 2 * Math.PI || 0;
+      this.setState({ trackerAngle: angle })
+    }
 
-    window.addEventListener('mouseup', function () {
-      if (!that.pressButton) {
-        return;
-      }
-      var id = setInterval(function () {
-        if (!that.animatedInProgress) {
-          that.pressButton = false;
-          Player.context.currentTime = trackerAngle / (2 * Math.PI) * Player.source.buffer.duration;
-          clearInterval(id);
-        }
-      }, 100);
-    });
-
-    window.addEventListener('mousemove', function (e) {
-      if (that.animatedInProgress) {
-        return;
-      }
-      if (that.pressButton && that.scene.inProcess()) {
-        that.calculateAngle(e);
-      }
-    });
+    this.trackerDrawArc();
   }
 
-  isInsideOfSmallCircle(e) {
+  trackerDrawArc() {
+    const {
+      canvasContext,
+      trackerLineWidth,
+      trackerInnerDelta,
+      sceneRadius,
+      scenePadding,
+      trackerAngle
+    } = this.state
+
+    canvasContext.save();
+    canvasContext.strokeStyle = 'rgba(97, 218, 251, 0.8)';
+    canvasContext.beginPath();
+    canvasContext.lineWidth = trackerLineWidth;
+
+    let r = sceneRadius - (trackerInnerDelta + trackerLineWidth / 2);
+    canvasContext.arc(
+      sceneRadius + scenePadding,
+      sceneRadius + scenePadding,
+      r, 0, trackerAngle, false
+    );
+    canvasContext.stroke();
+    canvasContext.restore();
+
+    this.setState({ canvasContext, trackerR: r })
+  }
+
+  trackerStartAnimation() {
+    const {
+      trackerAnimationCount,
+      trackerPrevAngle,
+      trackerAngle
+    } = this.state
+
+    let angle = trackerAngle
+    const l = Math.abs(trackerAngle) - Math.abs(trackerPrevAngle)
+    let step = l / trackerAnimationCount, i = 0
+    const f = () => {
+      angle += step
+      if (++i === trackerAnimationCount) {
+        this.setState({
+          trackerAngle: angle,
+          trackerPrevAngle: angle,
+          trackerAnimatedInProgress: false
+        })
+      } else {
+        this.setState({ trackerAnimateId: setTimeout(f, 20) })
+      }
+    }
+
+    // this.angle = this.prevAngle
+    // this.animateId = setTimeout(f, 20)
+  }
+
+  trackerStopAnimation() {
+    clearTimeout(this.state.trackerAnimateId)
+    this.setState({trackerAnimatedInProgress: false})
+  }
+
+  trackerCalculateAngle(event) {
+    const {
+      canvasCx,
+      canvasCy,
+      canvasCoord,
+      canvasContext,
+      animatedInProgress,
+      trackerAngle
+    } = this.state
+    const mx = event.pageX
+    const my = event.pageY
+    let angle = Math.atan((my - canvasCy - canvasCoord.top) / (mx - canvasCx - canvasCoord.left))
+    if (mx < canvasContext + canvasCoord.left) {
+      angle = Math.PI + angle
+    }
+    if (angle < 0) {
+      angle += 2 * Math.PI
+    }
+
+    this.setState({ trackerAngle: angle })
+
+    if (animatedInProgress) {
+      this.trackerStartAnimation()
+    } else {
+      this.setState({ trackerPrevAngle: trackerAngle})
+    }
+  }
+
+  trackerIsInsideOfSmallCircle(event) {
     let {
       canvasCx,
       canvasCy,
       canvasCoord,
-      canvasRadius,
+      sceneRadius,
       trackerInnerDelta
     } = this.state
-    var x = Math.abs(e.pageX - canvasCx - canvasCoord.left);
-    var y = Math.abs(e.pageY - canvasCy - canvasCoord.top);
-    return Math.sqrt(x * x + y * y) < canvasRadius - 3 * trackerInnerDelta;
+    var x = Math.abs(event.pageX - canvasCx - canvasCoord.left)
+    var y = Math.abs(event.pageY - canvasCy - canvasCoord.top)
+    return Math.sqrt(x * x + y * y) < sceneRadius - 3 * trackerInnerDelta
   }
 
-  isOusideOfBigCircle (e) {
+  trackerIsOusideOfBigCircle (event) {
     let {
       canvasCx,
       canvasCy,
       canvasCoord,
-      canvasRadius
+      sceneRadius
     } = this.state
-    return Math.abs(e.pageX - canvasCx - canvasCoord.left) > canvasRadius ||
-      Math.abs(e.pageY - canvasCy - canvasCoord.top) > canvasRadius;
+    return Math.abs(event.pageX - canvasCx - canvasCoord.left) > sceneRadius ||
+      Math.abs(event.pageY - canvasCy - canvasCoord.top) > sceneRadius
   }
 
   /**
