@@ -45,6 +45,38 @@ class Audio extends Component {
       canvasCx: null,
       canvasCy: null,
       canvasCoord: null,
+      canvasRadius: null,
+
+      /**
+       * Framer Context
+       */
+      framerTransformScale: false,
+      framerCountTicks: 360,
+      framerFrequencyData: [],
+      framerTickSize: 10,
+      framerPI: 360,
+      framerIndex: 0,
+      framerLoadingAngle: 0,
+      framerMaxTickSize: null,
+
+      /**
+       * Scene Context
+       */
+      scenePadding: 120,
+      sceneMinSize: 740,
+      sceneOptimiseHeight: 982,
+      sceneInProcess: false,
+      sceneRadius: null,
+
+      /**
+       * Tracker Context
+       */
+      trackerInnerDelta: 20,
+      trackerLineWidth: 7,
+      trackerPrevAngle: 0.5,
+      trackerAngle: 0,
+      trackerAnimationCount: 10,
+      trackerPressButton: false,
 
       /**
        * Misc
@@ -61,6 +93,7 @@ class Audio extends Component {
     /**
      * functions
      */
+    // @Player
     this.init = this.init.bind(this)
     this.loadSong = this.loadSong.bind(this)
     this.playSound = this.playSound.bind(this)
@@ -72,6 +105,16 @@ class Audio extends Component {
     this.switchSong = this.switchSong.bind(this)
     this.showPlayer = this.showPlayer.bind(this)
     this.drawArc = this.drawArc.bind(this)
+    // @Framer
+    this.framerInit = this.framerInit.bind(this)
+    // @Scene
+    this.sceneInit = this.sceneInit.bind(this)
+    this.startSceneRender = this.startSceneRender.bind(this)
+    this.sceneRender = this.sceneRender.bind(this)
+    this.sceneClear = this.sceneClear.bind(this)
+    this.sceneDraw = this.sceneDraw.bind(this)
+    // @Tracker
+    this.trackerInit = this.trackerInit.bind(this)
   }
 
   showPlayer() {
@@ -233,7 +276,7 @@ class Audio extends Component {
 
     const canvasScaleCoef = Math.max(0.5, 740 / optimiseHeight);
 
-    const size = Math.max(minSize, 1/*document.body.clientHeight */);
+    const size = Math.max(minSize, 1 /*document.body.clientHeight */);
     canvas.setAttribute('width', size);
     canvas.setAttribute('height', size);
     //this.canvas.style.marginTop = -size / 2 + 'px';
@@ -242,9 +285,9 @@ class Audio extends Component {
     const canvasWidth = size;
     const canvasHeight = size;
 
-    const radius = (size - padding * 2) / 2;
-    const canvasCx = radius + padding;
-    const canvasCy = radius + padding;
+    const canvasRadius = (size - padding * 2) / 2;
+    const canvasCx = canvasRadius + padding;
+    const canvasCy = canvasRadius + padding;
     const canvasCoord = canvas.getBoundingClientRect();
 
     this.setState({
@@ -254,28 +297,153 @@ class Audio extends Component {
       canvasScaleCoef,
       canvasCx,
       canvasCy,
-      canvasCoord
+      canvasCoord,
+      canvasRadius
     })
   }
 
   drawArc() {
-    let { canvasContext } = this.state
+    let {
+      canvasContext,
+      sceneRadius,
+      trackerInnerDelta,
+      scenePadding,
+      trackerLineWidth
+    } = this.state
 
     canvasContext.save()
     canvasContext.strokeStyle = 'rgba(254, 67, 101, 0.8)'
     canvasContext.beginPath()
-    canvasContext.lineWidth = this.lineWidth
+    canvasContext.lineWidth = trackerLineWidth
 
-    this.r = this.scene.radius - (this.innerDelta + this.lineWidth / 2)
+    this.r = sceneRadius - (trackerInnerDelta + trackerLineWidth / 2)
     canvasContext.arc(
-      this.scene.radius + this.scene.padding,
-      this.scene.radius + this.scene.padding,
+      sceneRadius + scenePadding,
+      sceneRadius + scenePadding,
       this.r, 0, this.angle, false
     )
     canvasContext.stroke()
     canvasContext.restore()
   }
 
+  framerInit() {
+    let {
+      canvasScaleCoef,
+      framerTickSize,
+      framerCountTicks
+    } = this.state
+
+    const framerMaxTickSize = framerTickSize * 9 * canvasScaleCoef;
+    framerCountTicks = 360 * canvasScaleCoef;
+
+    this.setState({ framerCountTicks, framerMaxTickSize})
+  }
+
+  sceneInit() {
+    this.initCanvas();
+    this.initHandlers();
+
+    this.framerInit();
+    this.trackerInit();
+    // Controls.init(this);
+
+    this.startSceneRender();
+  }
+
+  startSceneRender() {
+    this.setState({ sceneInProcess: true })
+    this.sceneRender();
+  }
+
+  sceneRender() {
+    requestAnimationFrame(() => {
+      this.clear();
+      this.draw();
+      if (this.state.sceneInProcess) {
+        this.sceneRender();
+      }
+    });
+  }
+
+  sceneClear() {
+    this.state.canvasContext.clearRect(0, 0, this.width, this.height);
+  }
+
+  sceneDraw() {
+    // Framer.draw();
+    // Tracker.draw();
+    // Controls.draw();
+  }
+
+  trackerInit() {
+    let {
+      canvas,
+      canvasContext,
+      trackerAngle,
+      trackerPrevAngle,
+      trackerPressButton
+    } = this.state
+
+    canvas.addEventListener('mousedown', function (e) {
+      if (this.trackerIsInsideOfSmallCircle(e) || this.trackerIsOusideOfBigCircle(e)) {
+        return;
+      }
+      trackerPrevAngle = trackerAngle;
+      trackerPressButton = true;
+      that.stopAnimation();
+      that.calculateAngle(e, true);
+    });
+
+    window.addEventListener('mouseup', function () {
+      if (!that.pressButton) {
+        return;
+      }
+      var id = setInterval(function () {
+        if (!that.animatedInProgress) {
+          that.pressButton = false;
+          Player.context.currentTime = trackerAngle / (2 * Math.PI) * Player.source.buffer.duration;
+          clearInterval(id);
+        }
+      }, 100);
+    });
+
+    window.addEventListener('mousemove', function (e) {
+      if (that.animatedInProgress) {
+        return;
+      }
+      if (that.pressButton && that.scene.inProcess()) {
+        that.calculateAngle(e);
+      }
+    });
+  }
+
+  isInsideOfSmallCircle(e) {
+    let {
+      canvasCx,
+      canvasCy,
+      canvasCoord,
+      canvasRadius,
+      trackerInnerDelta
+    } = this.state
+    var x = Math.abs(e.pageX - canvasCx - canvasCoord.left);
+    var y = Math.abs(e.pageY - canvasCy - canvasCoord.top);
+    return Math.sqrt(x * x + y * y) < canvasRadius - 3 * trackerInnerDelta;
+  }
+
+  isOusideOfBigCircle (e) {
+    let {
+      canvasCx,
+      canvasCy,
+      canvasCoord,
+      canvasRadius
+    } = this.state
+    return Math.abs(e.pageX - canvasCx - canvasCoord.left) > canvasRadius ||
+      Math.abs(e.pageY - canvasCy - canvasCoord.top) > canvasRadius;
+  }
+
+  /**
+   * React Render
+   */
   render() {
     return (
       <div className="Audio">
