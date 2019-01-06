@@ -80,7 +80,7 @@ class Audio extends Component {
       trackerPressButton: false,
       trackerAnimatedInProgress: false,
       trackerAnimateId: null,
-      trackerR: null,
+      trackerR: 226.5,
 
       /**
        * Controls Context
@@ -113,7 +113,6 @@ class Audio extends Component {
     this.nextSong = this.nextSong.bind(this)
     this.switchSong = this.switchSong.bind(this)
     this.showPlayer = this.showPlayer.bind(this)
-    this.drawArc = this.drawArc.bind(this)
     // @Framer
     this.framerInit = this.framerInit.bind(this)
     this.framerDraw = this.framerDraw.bind(this)
@@ -123,6 +122,7 @@ class Audio extends Component {
     this.framerGetTicks = this.framerGetTicks.bind(this)
     this.framerGetTickPoints = this.framerGetTickPoints.bind(this)
     this.framerSetLoadingPercent = this.framerSetLoadingPercent.bind(this)
+    this.framerGetSize = this.framerGetSize.bind(this)
     // @Scene
     this.sceneInit = this.sceneInit.bind(this)
     this.startSceneRender = this.startSceneRender.bind(this)
@@ -193,9 +193,7 @@ class Audio extends Component {
         currentSource.buffer = buffer
         console.log(currentSource)
 
-        this.setState({
-          currentSource
-        })
+        this.setState({ currentSource })
 
         this.playSound(currentSource)
       }, function (error) {
@@ -326,33 +324,6 @@ class Audio extends Component {
     })
   }
 
-  drawArc() {
-    let {
-      canvasContext,
-      sceneRadius,
-      trackerInnerDelta,
-      scenePadding,
-      trackerLineWidth,
-      trackerAngle
-    } = this.state
-
-    canvasContext.save()
-    canvasContext.strokeStyle = 'rgba(97, 218, 251, 0.8)'
-    canvasContext.beginPath()
-    canvasContext.lineWidth = trackerLineWidth
-
-    const trackerR = sceneRadius - (trackerInnerDelta + trackerLineWidth / 2)
-    canvasContext.arc(
-      sceneRadius + scenePadding,
-      sceneRadius + scenePadding,
-      trackerR, 0, trackerAngle, false
-    )
-    canvasContext.stroke()
-    canvasContext.restore()
-
-    this.setState({ trackerR })
-  }
-
   framerInit() {
     let {
       canvasScaleCoef,
@@ -427,7 +398,13 @@ class Audio extends Component {
   }
 
   sceneClear() {
-    this.state.canvasContext.clearRect(0, 0, this.width, this.height)
+    const {
+      canvasWidth,
+      canvasHeight,
+      canvasContext
+    } = this.state
+
+    canvasContext.clearRect(0, 0, canvasWidth, canvasHeight)
   }
 
   sceneDraw() {
@@ -464,8 +441,6 @@ class Audio extends Component {
     canvasContext.arc(sceneRadius + scenePadding + x, sceneRadius + scenePadding + y, 10, 0, Math.PI * 2, false)
     canvasContext.fill()
     canvasContext.restore()
-
-    this.setState({ canvasContext })
   }
 
   controlsGetQuadrant() {
@@ -491,23 +466,20 @@ class Audio extends Component {
   }
 
   framerDrawTicks() {
-    const {
-      canvasContext
-    } = this.state
-
-    let {
-      framerTicks
-    } = this.state
+    const { canvasContext } = this.state
+    let { framerTicks } = this.state
 
     canvasContext.save()
     canvasContext.beginPath()
     canvasContext.lineWidth = 1
     framerTicks = this.framerGetTicks([0, 90])
-    for (var i = 0, len = framerTicks.length; i < len; ++i) {
-      var tick = framerTicks[i]
+    for (let i = 0, len = framerTicks.length; i < len; ++i) {
+      const tick = framerTicks[i]
       this.framerDrawTick(tick.x1, tick.y1, tick.x2, tick.y2)
     }
     canvasContext.restore()
+
+    this.setState({ framerTicks })
   }
 
   framerDrawTick(x1 = null, y1 = null, x2 = null, y2 = null) {
@@ -533,8 +505,6 @@ class Audio extends Component {
     canvasContext.moveTo(canvasCx + x1, canvasCx + y1)
     canvasContext.lineTo(canvasCx + x2, canvasCx + y2)
     canvasContext.stroke()
-
-    this.setState({ canvasContext })
   }
 
   framerGetTicks(animationParams) {
@@ -560,7 +530,7 @@ class Audio extends Component {
       }
       tick = ticks[i]
       if (animationParams[0] <= tick.angle && tick.angle <= animationParams[1]) {
-        k = sceneRadius / (sceneRadius - this.getSize(tick.angle, animationParams[0], animationParams[1]) - delta)
+        k = sceneRadius / (sceneRadius - this.framerGetSize(tick.angle, animationParams[0], animationParams[1]) - delta)
       } else {
         k = sceneRadius / (sceneRadius - (framerTickSize + delta))
       }
@@ -570,28 +540,59 @@ class Audio extends Component {
       y2 = y1 * k
       m.push({ x1: x1, y1: y1, x2: x2, y2: y2 })
       if (i < 20) {
-        var scale = delta / 50
+        let scale = delta / 50
         scale = scale < 1 ? 1 : scale
         allScales.push(scale)
       }
     }
-    var sum = allScales.reduce((pv, cv) => { return pv + cv }, 0) / allScales.length
+    const sum = allScales.reduce((pv, cv) => { return pv + cv }, 0) / allScales.length
     if (framerTransformScale) {
-      this.canvas.style.transform = 'scale(' + sum + ')'
+      this.canvas.style.transform = `scale('${sum}')`
     }
     return m
   }
 
-  framerGetTickPoints() {
+  framerGetSize(angle, l, r) {
     const {
+      framerMaxTickSize,
+      framerTickSize,
+      framerIndex,
       framerCountTicks
     } = this.state
+    const m = (r - l) / 2;
+    const x = (angle - l);
+    let h;
 
-    const coords = [], step = this.PI / framerCountTicks
-    for (let deg = 0; deg < this.PI; deg += step) {
-      const rad = deg * Math.PI / (this.PI / 2)
+    if (x === m) {
+      return framerMaxTickSize;
+    }
+    const d = Math.abs(m - x);
+    const v = 70 * Math.sqrt(1 / d);
+    if (v > framerMaxTickSize) {
+      h = framerMaxTickSize - d;
+    } else {
+      h = Math.max(framerTickSize, v);
+    }
+
+    if (framerIndex > framerCountTicks) {
+      this.setState({ framerIndex: 0 })
+    }
+
+    return h;
+  }
+
+  framerGetTickPoints() {
+    const {
+      framerCountTicks,
+      framerPI
+    } = this.state
+
+    const coords = [], step = framerPI / framerCountTicks
+    for (let deg = 0; deg < framerPI; deg += step) {
+      const rad = deg * Math.PI / (framerPI / 2)
       coords.push({ x: Math.cos(rad), y: -Math.sin(rad), angle: deg })
     }
+
     return coords
   }
 
@@ -612,14 +613,12 @@ class Audio extends Component {
     canvasContext.strokeStyle = 'rgba(97, 218, 251, 0.5)'
     canvasContext.lineWidth = 1
 
-    var offset = trackerLineWidth / 2
+    const offset = trackerLineWidth / 2
     canvasContext.moveTo(scenePadding + 2 * sceneRadius - trackerInnerDelta - offset, scenePadding + sceneRadius)
     canvasContext.arc(canvasCx, canvasCy, sceneRadius - trackerInnerDelta - offset, 0, framerLoadingAngle, false)
 
     canvasContext.stroke()
     canvasContext.restore()
-
-    this.setState({ canvasContext })
   }
 
   framerSetLoadingPercent(percent) {
@@ -651,7 +650,7 @@ class Audio extends Component {
       if (!trackerPressButton) {
         return
       }
-      var id = setInterval(() => {
+      const id = setInterval(() => {
         if (!trackerAnimatedInProgress) {
           this.setState({ trackerPressButton: false })
           audioContext.currentTime = trackerAngle / (2 * Math.PI) * currentSource.buffer.duration
@@ -678,42 +677,43 @@ class Audio extends Component {
       trackerPressButton
     } = this.state
 
-    if (!currentSource.buffer) {
-      return;
-    }
-    if (!trackerPressButton) {
-      const angle = audioContext.currentTime / currentSource.buffer.duration * 2 * Math.PI || 0;
-      this.setState({ trackerAngle: angle })
-    }
+    if (currentSource !== null) {
+      if (!currentSource.buffer) {
+        return;
+      }
 
-    this.trackerDrawArc();
+      if (!trackerPressButton) {
+        const angle = audioContext.currentTime / currentSource.buffer.duration * 2 * Math.PI || 0;
+        this.setState({ trackerAngle: angle })
+      }
+
+      this.trackerDrawArc();
+    }
   }
 
   trackerDrawArc() {
-    const {
+    let {
       canvasContext,
-      trackerLineWidth,
-      trackerInnerDelta,
       sceneRadius,
+      trackerInnerDelta,
       scenePadding,
+      trackerLineWidth,
       trackerAngle
     } = this.state
 
-    canvasContext.save();
-    canvasContext.strokeStyle = 'rgba(97, 218, 251, 0.8)';
-    canvasContext.beginPath();
-    canvasContext.lineWidth = trackerLineWidth;
+    canvasContext.save()
+    canvasContext.strokeStyle = 'rgba(97, 218, 251, 0.8)'
+    canvasContext.beginPath()
+    canvasContext.lineWidth = trackerLineWidth
 
-    let r = sceneRadius - (trackerInnerDelta + trackerLineWidth / 2);
+    const trackerR = sceneRadius - (trackerInnerDelta + trackerLineWidth / 2)
     canvasContext.arc(
       sceneRadius + scenePadding,
       sceneRadius + scenePadding,
-      r, 0, trackerAngle, false
-    );
-    canvasContext.stroke();
-    canvasContext.restore();
-
-    this.setState({ canvasContext, trackerR: r })
+      trackerR, 0, trackerAngle, false
+    )
+    canvasContext.stroke()
+    canvasContext.restore()
   }
 
   trackerStartAnimation() {
@@ -784,8 +784,8 @@ class Audio extends Component {
       sceneRadius,
       trackerInnerDelta
     } = this.state
-    var x = Math.abs(event.pageX - canvasCx - canvasCoord.left)
-    var y = Math.abs(event.pageY - canvasCy - canvasCoord.top)
+    const x = Math.abs(event.pageX - canvasCx - canvasCoord.left)
+    const y = Math.abs(event.pageY - canvasCy - canvasCoord.top)
     return Math.sqrt(x * x + y * y) < sceneRadius - 3 * trackerInnerDelta
   }
 
