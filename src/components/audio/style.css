@@ -1,0 +1,46 @@
+.Audio {
+  background-color: #282c34;
+  /* background-color: #8743cc; */
+  /* background-color: #9055cc; */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.Audio-link {
+  color: #61dafb;
+}
+
+.Player {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: auto;
+}
+
+.Player .controls {
+  display: flex;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+}
+
+.Player .song-info {
+  position: relative;
+  z-index: 2;
+}
+
+.Player .song-info .name {
+  display: flex;
+  justify-content: center;
+}
+
+#Player-canvas {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  display: flex;
+  align-self: center;
+}
