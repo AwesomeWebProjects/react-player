@@ -669,15 +669,15 @@ class Audio extends Component {
   }
 
   trackerInit() {
-    let {
-      canvas,
-      trackerAngle,
-      trackerPressButton,
-      trackerAnimatedInProgress,
-      audioContext,
-      currentSource,
-      sceneInProcess
-    } = this.state
+    // let {
+    //   canvas,
+    //   trackerAngle,
+    //   trackerPressButton,
+    //   trackerAnimatedInProgress,
+    //   audioContext,
+    //   currentSource,
+    //   sceneInProcess
+    // } = this.state
 
     // canvas.addEventListener('mousedown', event => {
     //   if (this.trackerIsInsideOfSmallCircle(event) || this.trackerIsOusideOfBigCircle(event)) {
