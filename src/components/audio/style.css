@@ -73,6 +73,26 @@
   justify-content: center;
 }
 
+.Player .song-footer {
+  color: rgba(97, 218, 251, 0.8);
+  position: absolute;
+  z-index: 2;
+  bottom: 2.5rem;
+  width: 100%;
+}
+
+.Player .song-footer .song-gain {
+  display: flex;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.Player .song-footer .song-duration {
+  display: flex;
+  justify-content: center;
+  font-size: 18px;
+}
+
 #Player-canvas {
   position: absolute;
   width: 600px;

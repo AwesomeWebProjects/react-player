@@ -8,7 +8,10 @@ import {
   PlayArrow,
   Pause,
   FastForward,
-  FastRewind
+  FastRewind,
+  VolumeMute,
+  VolumeDown,
+  VolumeUp
 } from '@material-ui/icons'
 
 class Audio extends Component {
@@ -140,6 +143,8 @@ class Audio extends Component {
     // @Controls
     this.controlsDraw = this.controlsDraw.bind(this)
     this.controlsGetQuadrant = this.controlsGetQuadrant.bind(this)
+    // @Miscs
+    this.changeVolume = this.changeVolume.bind(this)
   }
 
   showPlayer() {
@@ -538,10 +543,30 @@ class Audio extends Component {
     const allScales = []
     for (let i = 0, len = ticks.length; i < len; ++i) {
       const coef = 1 - i / (len * 2.5)
-      let delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
+      let delta
+
+      switch (this.state.gainNode.gain.value) {
+        case 0:
+          delta = (((framerFrequencyData[i] / 2) * 0.5 || 0) - lesser * coef) * canvasScaleCoef
+          break;
+
+        case 0.5:
+          delta = (((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef) / 2
+          break;
+
+        case 1:
+          delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
+          break;
+
+        default:
+          delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
+          break;
+      }
+
       if (delta < 0) {
         delta = 0
       }
+
       tick = ticks[i]
       if (initialFixedTicks) {
         if (animationParams[0] <= tick.angle && tick.angle <= animationParams[1]) {
@@ -818,6 +843,28 @@ class Audio extends Component {
       Math.abs(event.pageY - canvasCy - canvasCoord.top) > sceneRadius
   }
 
+  changeVolume() {
+    let { gainNode } = this.state
+    switch (this.state.gainNode.gain.value) {
+      case 0:
+          gainNode.gain.value = 0.5;
+        break;
+
+      case 0.5:
+          gainNode.gain.value = 1;
+        break;
+
+      case 1:
+          gainNode.gain.value = 0;
+        break;
+
+      default:
+        break;
+    }
+
+    this.setState({ gainNode })
+  }
+
   /**
    * React Render
    */
@@ -853,6 +900,17 @@ class Audio extends Component {
               <div className="next-song">
                 <FastForward style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.nextSong} />
               </div>
+            </div>
+            <div className="song-footer">
+              <div className="song-gain">{
+                this.state.gainNode.gain.value === 0
+                  ? <VolumeMute style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
+                  : this.state.gainNode.gain.value < 1
+                    ? <VolumeDown style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
+                    : <VolumeUp style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
+                }
+              </div>
+              <div className="song-duration">00:00</div>
             </div>
           </div>
         : null }
