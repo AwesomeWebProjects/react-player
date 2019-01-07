@@ -835,23 +835,24 @@ class Audio extends Component {
         { this.state.playerInitalized ?
           <div className="Player">
             <canvas id="Player-canvas" key="Player-canvas"></canvas>
+            <div className="song-info">
+              <div className="song-artist">Riot Games</div>
+              <div className="song-name">Rise - League of Legends</div>
+            </div>
             <div className="controls">
-              <div className="back-song">
-                <FastRewind style={{ fontSize: '48px', margin: '1rem', cursor: 'pointer' }} onClick={this.prevSong} />
+              <div className="prev-song">
+                <FastRewind style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.prevSong} />
               </div>
               <div className="pause-play-song">
                 {
                   !this.state.playing
-                    ? <PlayArrow style={{ fontSize: '48px', margin: '1rem', cursor: 'pointer' }} onClick={this.resumeSong} />
-                    : <Pause style={{ fontSize: '48px', margin: '1rem', cursor: 'pointer' }} onClick={this.suspendSong} />
+                    ? <PlayArrow style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.resumeSong} />
+                    : <Pause style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.suspendSong} />
                 }
               </div>
               <div className="next-song">
-                <FastForward style={{ fontSize: '48px', margin: '1rem', cursor: 'pointer' }} onClick={this.nextSong} />
+                <FastForward style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.nextSong} />
               </div>
-            </div>
-            <div className="song-info">
-              <div className="name">Song Name</div>
             </div>
           </div>
         : null }
