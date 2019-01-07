@@ -654,38 +654,38 @@ class Audio extends Component {
       sceneInProcess
     } = this.state
 
-    canvas.addEventListener('mousedown', event => {
-      if (this.trackerIsInsideOfSmallCircle(event) || this.trackerIsOusideOfBigCircle(event)) {
-        return
-      }
-      this.setState({ trackerPressButton: true, trackerPrevAngle: trackerAngle})
-      this.trackerStopAnimation()
-      this.setState({ trackerAnimatedInProgress: true})
-      this.trackerCalculateAngle(event)
-    })
+    // canvas.addEventListener('mousedown', event => {
+    //   if (this.trackerIsInsideOfSmallCircle(event) || this.trackerIsOusideOfBigCircle(event)) {
+    //     return
+    //   }
+    //   this.setState({ trackerPressButton: true, trackerPrevAngle: trackerAngle})
+    //   this.trackerStopAnimation()
+    //   this.setState({ trackerAnimatedInProgress: true})
+    //   this.trackerCalculateAngle(event)
+    // })
 
-    window.addEventListener('mouseup', () => {
-      if (!trackerPressButton) {
-        return
-      }
-      const id = setInterval(() => {
-        if (!trackerAnimatedInProgress) {
-          this.setState({ trackerPressButton: false })
-          audioContext.currentTime = trackerAngle / (2 * Math.PI) * currentSource.buffer.duration
+    // window.addEventListener('mouseup', () => {
+    //   if (!trackerPressButton) {
+    //     return
+    //   }
+    //   const id = setInterval(() => {
+    //     if (!trackerAnimatedInProgress) {
+    //       this.setState({ trackerPressButton: false })
+    //       audioContext.currentTime = trackerAngle / (2 * Math.PI) * currentSource.buffer.duration
 
-          clearInterval(id)
-        }
-      }, 100)
-    })
+    //       clearInterval(id)
+    //     }
+    //   }, 100)
+    // })
 
-    window.addEventListener('mousemove', event =>  {
-      if (trackerAnimatedInProgress) {
-        return
-      }
-      if (trackerPressButton && sceneInProcess) {
-        this.trackerCalculateAngle(event)
-      }
-    })
+    // window.addEventListener('mousemove', event =>  {
+    //   if (trackerAnimatedInProgress) {
+    //     return
+    //   }
+    //   if (trackerPressButton && sceneInProcess) {
+    //     this.trackerCalculateAngle(event)
+    //   }
+    // })
   }
 
   trackerDraw() {
