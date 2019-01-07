@@ -91,7 +91,8 @@ class Audio extends Component {
       /**
        * Misc
        */
-      playerInitalized: false
+      playerInitalized: false,
+      initialFixedTicks: false
     }
 
     /**
@@ -527,7 +528,8 @@ class Audio extends Component {
       framerFrequencyData,
       canvasScaleCoef,
       framerTransformScale,
-      sceneRadius
+      sceneRadius,
+      initialFixedTicks
     } = this.state
 
     const ticks = this.framerGetTickPoints()
@@ -541,8 +543,12 @@ class Audio extends Component {
         delta = 0
       }
       tick = ticks[i]
-      if (animationParams[0] <= tick.angle && tick.angle <= animationParams[1]) {
-        k = sceneRadius / (sceneRadius - this.framerGetSize(tick.angle, animationParams[0], animationParams[1]) - delta)
+      if (initialFixedTicks) {
+        if (animationParams[0] <= tick.angle && tick.angle <= animationParams[1]) {
+          k = sceneRadius / (sceneRadius - this.framerGetSize(tick.angle, animationParams[0], animationParams[1]) - delta)
+        } else {
+          k = sceneRadius / (sceneRadius - (framerTickSize + delta))
+        }
       } else {
         k = sceneRadius / (sceneRadius - (framerTickSize + delta))
       }
