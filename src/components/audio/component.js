@@ -5,8 +5,8 @@ import fantastic from '../../assets/fantastic.mp3'
 import ParticleButton from '../button/component'
 import buttonSamples from './button-samples'
 import {
-  PlayCircleOutline,
-  PauseCircleOutline,
+  PlayArrow,
+  Pause,
   FastForward,
   FastRewind
 } from '@material-ui/icons'
@@ -842,8 +842,8 @@ class Audio extends Component {
               <div className="pause-play-song">
                 {
                   !this.state.playing
-                    ? <PlayCircleOutline style={{ fontSize: '48px', margin: '1rem', cursor: 'pointer' }} onClick={this.resumeSong} />
-                    : <PauseCircleOutline style={{ fontSize: '48px', margin: '1rem', cursor: 'pointer' }} onClick={this.suspendSong} />
+                    ? <PlayArrow style={{ fontSize: '48px', margin: '1rem', cursor: 'pointer' }} onClick={this.resumeSong} />
+                    : <Pause style={{ fontSize: '48px', margin: '1rem', cursor: 'pointer' }} onClick={this.suspendSong} />
                 }
               </div>
               <div className="next-song">
