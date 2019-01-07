@@ -34,6 +34,7 @@ class Audio extends Component {
       ],
       musicIndex: 0,
       playing: false,
+      javascriptNode: null,
 
       /**
        * Canvas Context
@@ -157,13 +158,19 @@ class Audio extends Component {
       // Fix up for prefixing
       window.AudioContext = window.AudioContext || window.webkitAudioContext
       const audioContext = new AudioContext()
+      const javascriptNode = audioContext.createScriptProcessor(2048, 1, 1)
+
       const analyser = audioContext.createAnalyser()
       const gainNode = audioContext.createGain()
 
       analyser.fftSize = 2048
       const bufferLength = analyser.frequencyBinCount
       const dataArray = new Uint8Array(bufferLength)
-      // analyser.getByteTimeDomainData(dataArray)
+
+      javascriptNode.onaudioprocess = () => {
+        analyser.getByteFrequencyData(this.state.framerFrequencyData) // For Bits
+        // analyser.getByteTimeDomainData(this.state.framerFrequencyData) // For Waves
+      };
 
       this.setState({
         audioContext,
@@ -171,10 +178,9 @@ class Audio extends Component {
         gainNode,
         dataArray,
         bufferLength,
-        framerFrequencyData: dataArray
+        framerFrequencyData: dataArray,
+        javascriptNode
       })
-
-      analyser.getByteFrequencyData(this.state.framerFrequencyData)
 
       this.loadSong(tracks[musicIndex])
     } catch (error) {
@@ -210,11 +216,13 @@ class Audio extends Component {
     const {
       audioContext,
       analyser,
-      gainNode
+      gainNode,
+      javascriptNode
     } = this.state
 
     source.connect(analyser)
-    analyser.connect(gainNode)
+    analyser.connect(javascriptNode)
+    javascriptNode.connect(gainNode)
     gainNode.connect(audioContext.destination)
 
     // Reduce the volume.
