@@ -163,15 +163,18 @@ class Audio extends Component {
       analyser.fftSize = 2048
       const bufferLength = analyser.frequencyBinCount
       const dataArray = new Uint8Array(bufferLength)
-      analyser.getByteTimeDomainData(dataArray)
+      // analyser.getByteTimeDomainData(dataArray)
 
       this.setState({
         audioContext,
         analyser,
         gainNode,
         dataArray,
-        bufferLength
+        bufferLength,
+        framerFrequencyData: dataArray
       })
+
+      analyser.getByteFrequencyData(this.state.framerFrequencyData)
 
       this.loadSong(tracks[musicIndex])
     } catch (error) {
@@ -482,7 +485,7 @@ class Audio extends Component {
     this.setState({ framerTicks })
   }
 
-  framerDrawTick(x1 = null, y1 = null, x2 = null, y2 = null) {
+  framerDrawTick(x1, y1, x2, y2) {
     const {
       canvasCx,
       canvasCy,
@@ -511,6 +514,7 @@ class Audio extends Component {
     this.setState({ framerTickSize: 10 })
 
     const {
+      canvas,
       framerTickSize,
       framerFrequencyData,
       canvasScaleCoef,
@@ -547,7 +551,7 @@ class Audio extends Component {
     }
     const sum = allScales.reduce((pv, cv) => { return pv + cv }, 0) / allScales.length
     if (framerTransformScale) {
-      this.canvas.style.transform = `scale('${sum}')`
+      canvas.style.transform = `scale('${sum}')`
     }
     return m
   }
