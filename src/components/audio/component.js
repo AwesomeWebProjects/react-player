@@ -547,7 +547,7 @@ class Audio extends Component {
 
       switch (this.state.gainNode.gain.value) {
         case 0:
-          delta = (((framerFrequencyData[i] / 2) * 0.5 || 0) - lesser * coef) * canvasScaleCoef
+            delta = 0
           break;
 
         case 0.5:
