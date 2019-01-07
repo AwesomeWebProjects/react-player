@@ -221,9 +221,9 @@ class Audio extends Component {
     } = this.state
 
     source.connect(analyser)
-    analyser.connect(javascriptNode)
-    javascriptNode.connect(gainNode)
+    analyser.connect(gainNode)
     gainNode.connect(audioContext.destination)
+    javascriptNode.connect(audioContext.destination)
 
     // Reduce the volume.
     gainNode.gain.value = 0.5
