@@ -759,7 +759,7 @@ class Audio extends Component {
       trackerPressButton
     } = this.state
 
-    if (currentSource !== null && audioContext.state !== 'suspended') {
+    if (currentSource !== null) {
       if (!currentSource.buffer) {
         return;
       }
