@@ -34,7 +34,6 @@ class Audio extends Component {
       tracks: [
         rise,
         fantastic,
-        'https://soundcloud.com/mortengranau/atb-ecstasy-morten-granau-remix'
       ],
       musicIndex: 0,
       playing: false,
@@ -252,6 +251,10 @@ class Audio extends Component {
 
     source.start(0)
 
+    if (audioContext.state === 'suspended') {
+      audioContext.resume()
+    }
+
     this.setState({ playing: true })
   }
 
@@ -276,6 +279,7 @@ class Audio extends Component {
     let {
       musicIndex,
       tracks,
+      audioContext
     } = this.state
 
     if (musicIndex >= (tracks.length - 1)) {
@@ -284,13 +288,15 @@ class Audio extends Component {
       musicIndex = + 1
     }
 
+    audioContext.suspend()
     this.switchSong(musicIndex)
   }
 
   prevSong() {
     let {
       musicIndex,
-      tracks
+      tracks,
+      audioContext
     } = this.state
 
     if (musicIndex <= 0) {
@@ -299,6 +305,7 @@ class Audio extends Component {
       musicIndex = - 1
     }
 
+    audioContext.suspend()
     this.switchSong(musicIndex)
   }
 
