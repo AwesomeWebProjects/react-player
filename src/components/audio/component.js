@@ -147,6 +147,8 @@ class Audio extends Component {
     // @Miscs
     this.changeVolume = this.changeVolume.bind(this)
     this.getVolume = this.getVolume.bind(this)
+    this.durationUpdate = this.durationUpdate.bind(this)
+    this.getDuration = this.getDuration.bind(this)
   }
 
   componentDidMount() {
@@ -218,8 +220,6 @@ class Audio extends Component {
       audioContext.decodeAudioData(request.response, (buffer) => {
         const currentSource = audioContext.createBufferSource()
         currentSource.buffer = buffer
-        console.log(currentSource)
-
         this.setState({ currentSource })
         setTimeout(() => {
           this.playSound()
@@ -765,11 +765,12 @@ class Audio extends Component {
       }
 
       if (!trackerPressButton) {
-        const angle = audioContext.currentTime / currentSource.buffer.duration * 2 * Math.PI || 0;
+        const angle = audioContext.currentTime / currentSource.buffer.duration * 2 * Math.PI || 0
         this.setState({ trackerAngle: angle })
       }
 
-      this.trackerDrawArc();
+      this.durationUpdate()
+      this.trackerDrawArc()
     }
   }
 
@@ -882,6 +883,33 @@ class Audio extends Component {
       Math.abs(event.pageY - canvasCy - canvasCoord.top) > sceneRadius
   }
 
+  durationUpdate() {
+    const {
+      currentSource,
+      audioContext
+    } = this.state
+
+    if (audioContext && audioContext.state !== 'suspended' && currentSource) {
+      this.setState({
+        duration: audioContext.currentTime
+      })
+    }
+    // audioContext.currentTime / currentSource.buffer.duration
+  }
+
+  getDuration() {
+    const { duration } = this.state
+    if (duration === 0) {
+      return '00:00'
+    }
+    const time = (duration / 60).toString().split('.')
+    if (parseInt(time[0]) < 10) {
+      return `0${time[0]}:${time[1].substring(0, 2)}`
+    }
+
+    return `${time[0]}:${time[1].substring(0, 2)}`
+  }
+
   changeVolume() {
     let { gainNode } = this.state
     switch (this.state.gainNode.gain.value) {
@@ -958,7 +986,8 @@ class Audio extends Component {
                     : <VolumeUp style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
                 }
               </div>
-              <div className="song-duration">00:00</div>
+            {/* <div className="song-duration">{this.state.duration}</div> */}
+            <div className="song-duration">{this.getDuration()}</div>
             </div>
           </div>
       </div>
