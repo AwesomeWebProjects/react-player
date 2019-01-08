@@ -33,11 +33,13 @@ class Audio extends Component {
       duration: 0,
       tracks: [
         rise,
-        fantastic
+        fantastic,
+        'https://soundcloud.com/mortengranau/atb-ecstasy-morten-granau-remix'
       ],
       musicIndex: 0,
       playing: false,
       javascriptNode: null,
+      firstPlay: true,
 
       /**
        * Canvas Context
@@ -94,15 +96,15 @@ class Audio extends Component {
       /**
        * Misc
        */
-      playerInitalized: false,
       initialFixedTicks: false
     }
 
     /**
      * vars
      */
-    this.initButton = buttonSamples[12].buttonStyles
-    this.initButtonOptions = buttonSamples[12].buttonOptions
+    // This button can be used to download button
+    // this.initButton = buttonSamples[12].buttonStyles
+    // this.initButtonOptions = buttonSamples[12].buttonOptions
 
     /**
      * functions
@@ -145,11 +147,19 @@ class Audio extends Component {
     this.controlsGetQuadrant = this.controlsGetQuadrant.bind(this)
     // @Miscs
     this.changeVolume = this.changeVolume.bind(this)
+    this.getVolume = this.getVolume.bind(this)
+  }
+
+  componentDidMount() {
+    this.canvasConfigure()
+
+    setTimeout(() => {
+      // this.startPlayer()
+      this.showPlayer()
+    }, 200)
   }
 
   showPlayer() {
-    this.setState({ playerInitalized: true})
-
     this.framerSetLoadingPercent(1)
     this.sceneInit()
   }
@@ -161,6 +171,7 @@ class Audio extends Component {
   init() {
     try {
       const { tracks, musicIndex } = this.state
+
       // Fix up for prefixing
       window.AudioContext = window.AudioContext || window.webkitAudioContext
       const audioContext = new AudioContext()
@@ -188,7 +199,9 @@ class Audio extends Component {
         javascriptNode
       })
 
-      this.loadSong(tracks[musicIndex])
+      setTimeout(() => {
+        this.loadSong(tracks[musicIndex])
+      }, 200)
     } catch (error) {
       console.error(error)
       console.error('Web Audio API is not supported in this browser')
@@ -209,8 +222,9 @@ class Audio extends Component {
         console.log(currentSource)
 
         this.setState({ currentSource })
-
-        this.playSound(currentSource)
+        setTimeout(() => {
+          this.playSound()
+        }, 200)
       }, function (error) {
         console.error(error)
       })
@@ -218,14 +232,16 @@ class Audio extends Component {
     request.send()
   }
 
-  playSound(source) {
+  playSound() {
     const {
       audioContext,
       analyser,
       gainNode,
-      javascriptNode
+      javascriptNode,
+      currentSource
     } = this.state
 
+    const source = currentSource
     source.connect(analyser)
     analyser.connect(gainNode)
     gainNode.connect(audioContext.destination)
@@ -245,8 +261,15 @@ class Audio extends Component {
   }
 
   resumeSong() {
-    this.state.audioContext.resume()
-    this.setState({ playing: true })
+    const { firstPlay } = this.state
+    if (firstPlay) {
+      // this.playSound()
+      this.init()
+      this.setState({ firstPlay: false })
+    } else {
+      this.state.audioContext.resume()
+      this.setState({ playing: true })
+    }
   }
 
   nextSong() {
@@ -304,7 +327,9 @@ class Audio extends Component {
       canvasContext
     })
 
-    this.calculateSize()
+    setTimeout(() => {
+      this.calculateSize()
+    }, 200)
   }
 
   calculateSize() {
@@ -361,7 +386,12 @@ class Audio extends Component {
     } = this.state
 
     setTimeout(() => {
-      const rawTime = parseInt(audioContext.currentTime || 0)
+      let rawTime = 0
+
+      if (audioContext && audioContext.currentTime) {
+        rawTime = parseInt(audioContext.currentTime || 0)
+      }
+
       const secondsInMin = 60
       let min = parseInt(rawTime / secondsInMin)
       let seconds = rawTime - min * secondsInMin
@@ -381,7 +411,7 @@ class Audio extends Component {
   }
 
   sceneInit() {
-    this.canvasConfigure()
+    // this.canvasConfigure()
     this.sceneInitHandlers()
 
     this.framerInit()
@@ -543,24 +573,26 @@ class Audio extends Component {
     const allScales = []
     for (let i = 0, len = ticks.length; i < len; ++i) {
       const coef = 1 - i / (len * 2.5)
-      let delta
+      let delta = 0
 
-      switch (this.state.gainNode.gain.value) {
-        case 0:
-            delta = 0
-          break;
+      if (this.state.gainNode) {
+        switch (this.state.gainNode.gain.value) {
+          case 0:
+              delta = 0
+            break;
 
-        case 0.5:
-          delta = (((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef) / 2
-          break;
+          case 0.5:
+            delta = (((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef) / 2
+            break;
 
-        case 1:
-          delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
-          break;
+          case 1:
+            delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
+            break;
 
-        default:
-          delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
-          break;
+          default:
+            delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
+            break;
+        }
       }
 
       if (delta < 0) {
@@ -720,7 +752,7 @@ class Audio extends Component {
       trackerPressButton
     } = this.state
 
-    if (currentSource !== null) {
+    if (currentSource !== null && audioContext.state !== 'suspended') {
       if (!currentSource.buffer) {
         return;
       }
@@ -865,21 +897,30 @@ class Audio extends Component {
     this.setState({ gainNode })
   }
 
+  getVolume() {
+    let { gainNode } = this.state
+
+    if (gainNode == null) {
+      return 0
+    }
+
+    return gainNode.gain.value
+  }
+
   /**
    * React Render
    */
   render() {
     return (
       <div className="Audio">
-        <ParticleButton
+        {/* <ParticleButton
           text="Play"
           background="transparent"
           buttonStyles={this.initButton}
           buttonOptions={this.initButtonOptions}
           onStartAnimation={this.startPlayer}
           onFinishAnimation={this.showPlayer}>
-        </ParticleButton>
-        { this.state.playerInitalized ?
+        </ParticleButton> */}
           <div className="Player">
             <canvas id="Player-canvas" key="Player-canvas"></canvas>
             <div className="song-info">
@@ -903,9 +944,9 @@ class Audio extends Component {
             </div>
             <div className="song-footer">
               <div className="song-gain">{
-                this.state.gainNode.gain.value === 0
+                this.getVolume() === 0
                   ? <VolumeMute style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
-                  : this.state.gainNode.gain.value < 1
+                  : this.getVolume() < 1
                     ? <VolumeDown style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
                     : <VolumeUp style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
                 }
@@ -913,7 +954,6 @@ class Audio extends Component {
               <div className="song-duration">00:00</div>
             </div>
           </div>
-        : null }
       </div>
     )
   }

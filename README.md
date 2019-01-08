@@ -1,6 +1,12 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+And based on https://codepen.io/alexdevp/full/RNELPV - Alex Permyakov
+
+## Changes
+
+Audio processing was written from zero while layout code was based and refactored based in pen of `Alex Permyakov`;
+
+## Project Available Scripts
 
 In the project directory, you can run:
 
