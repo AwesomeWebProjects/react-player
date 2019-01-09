@@ -43,6 +43,8 @@ class Audio extends Component {
       audioLoadOffsetTime: 0,
       audioCurrentTime: 0,
       isLoadingSong: false,
+      audioStreamIndex: 0,
+      audioStreamData: [],
 
       /**
        * Canvas Context
@@ -125,6 +127,8 @@ class Audio extends Component {
     this.nextSong = this.nextSong.bind(this)
     this.switchSong = this.switchSong.bind(this)
     this.showPlayer = this.showPlayer.bind(this)
+    this.audioStream = this.audioStream.bind(this)
+    this.readAudioStream = this.readAudioStream.bind(this)
     // @Framer
     this.framerInit = this.framerInit.bind(this)
     this.framerDraw = this.framerDraw.bind(this)
@@ -221,37 +225,10 @@ class Audio extends Component {
       audioContextCreatedTime,
       audioLoadOffsetTime
     } = this.state
-    if (!!window.self.fetch) {
-      console.log('fetch')
-      fetch(url).then(response => {
-        return response.arrayBuffer()
-      }).then(responseBuffer => {
-        audioContext.decodeAudioData(responseBuffer, (buffer) => {
-          const completeBuffer = buffer
-          const currentSource = audioContext.createBufferSource()
-          const audioBuffer = audioContext.createBuffer(2, audioContext.sampleRate * (30 * 2), audioContext.sampleRate)
-          console.log({ audioBuffer, completeBuffer, response: responseBuffer })
-          currentSource.buffer = completeBuffer
-          this.setState({ currentSource })
-          setTimeout(() => {
-            this.playSound()
-            audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
 
-            if (audioLoadOffsetTime > audioContext.currentTime) {
-              audioLoadOffsetTime = audioContext.currentTime
-            }
-
-            this.setState({
-              audioContextCreatedTime,
-              audioLoadOffsetTime,
-              isLoadingSong: false
-            })
-          }, 200)
-        }, function (error) {
-          console.error(error)
-        })
-      })
-      
+    if (window.fetch && window.ReadableStream) {
+      console.log('fetch and stream')
+      this.audioStream(url)
     } else {
       const request = new XMLHttpRequest()
       request.open('GET', url, true)
@@ -284,8 +261,107 @@ class Audio extends Component {
           console.error(error)
         })
       }
-      request.send() 
+      request.send()
     }
+  }
+
+  audioStream(url) {
+    const { audioContext } = this.state
+    let {
+      audioContextCreatedTime,
+      audioLoadOffsetTime
+    } = this.state
+
+    fetch(url).then(response => {
+      if (!response.ok) {
+        throw Error(`${response.status} ${response.statusText}`)
+      }
+
+      if (!response.body) {
+        throw Error('ReadableStream not yet supported in this browser.')
+      }
+
+      const contentLength = response.headers.get('content-length');
+      if (!contentLength) {
+        throw Error('Content-Length response header unavailable');
+      }
+
+      caches.open('mysite-dynamic').then((cache) => {
+        console.log('sw response:', response)
+        return cache.match(response).then((response) => {
+          return response || fetch(response).then((response) => {
+            cache.put(response, response.clone());
+            return response;
+          });
+        });
+      })
+
+      const stream = this.readAudioStream(response, contentLength, { all: false, sec: 3 })
+
+      return new Response(stream)
+    }).then(response => {
+      return response.arrayBuffer()
+    }).then(responseBuffer => {
+      audioContext.decodeAudioData(responseBuffer, (buffer) => {
+        const currentSource = audioContext.createBufferSource()
+
+        currentSource.buffer = buffer
+        this.setState({ currentSource }, () => {
+          this.playSound()
+          audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
+
+          if (audioLoadOffsetTime > audioContext.currentTime) {
+            audioLoadOffsetTime = audioContext.currentTime
+          }
+
+          this.setState({
+            audioContextCreatedTime,
+            audioLoadOffsetTime,
+            isLoadingSong: false
+          })
+        })
+      }, function (error) {
+        console.error(error)
+      })
+    })
+  }
+  
+  readAudioStream(response, contentLength, params) {
+    const total = parseInt(contentLength, 10);
+    let loaded = 0
+    const startedStream = new Date()
+
+    return new ReadableStream({
+      start(controller) {
+        const reader = response.body.getReader();
+        read()
+        function read() {
+          reader.read().then(({ done, value }) => {
+
+            if (!params.all) {
+              if (((new Date() - startedStream) / 1000) >= (params.sec || 3)) {
+                console.log(`hye`)
+                controller.close()
+                return
+              }
+            }
+            if (done) {
+              controller.close()
+              return
+            }
+
+            loaded += value.byteLength;
+            console.log({ loaded, total }, (new Date() - startedStream) / 1000)
+            controller.enqueue(value)
+
+            read()
+          }).catch(error => {
+            console.error(error);
+            controller.error(error)
+          })
+        }
+      }
+    })
   }
 
   playSound() {
