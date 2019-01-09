@@ -2,8 +2,8 @@ import React, { Component } from 'react'
 import './style.css'
 import rise from '../../assets/rise.mp3'
 import fantastic from '../../assets/fantastic.mp3'
-import ParticleButton from '../button/component'
-import buttonSamples from './button-samples'
+// import ParticleButton from '../button/component'
+// import buttonSamples from './button-samples'
 import {
   PlayArrow,
   Pause,
@@ -39,6 +39,9 @@ class Audio extends Component {
       playing: false,
       javascriptNode: null,
       firstPlay: true,
+      audioContextCreatedTime: 0,
+      audioLoadOffsetTime: 0,
+      audioCurrentTime: 0,
 
       /**
        * Canvas Context
@@ -90,7 +93,9 @@ class Audio extends Component {
       /**
        * Controls Context
        */
-      timeControl: {},
+      timeControl: {
+        textContent: '00:00'
+      },
 
       /**
        * Misc
@@ -147,8 +152,7 @@ class Audio extends Component {
     // @Miscs
     this.changeVolume = this.changeVolume.bind(this)
     this.getVolume = this.getVolume.bind(this)
-    this.durationUpdate = this.durationUpdate.bind(this)
-    this.getDuration = this.getDuration.bind(this)
+    this.initTimeHandler = this.initTimeHandler.bind(this)
   }
 
   componentDidMount() {
@@ -176,6 +180,7 @@ class Audio extends Component {
       // Fix up for prefixing
       window.AudioContext = window.AudioContext || window.webkitAudioContext
       const audioContext = new AudioContext()
+      const audioContextCreatedTime = new Date()
       const javascriptNode = audioContext.createScriptProcessor(2048, 1, 1)
 
       const analyser = audioContext.createAnalyser()
@@ -188,7 +193,7 @@ class Audio extends Component {
       javascriptNode.onaudioprocess = () => {
         analyser.getByteFrequencyData(this.state.framerFrequencyData) // For Bits
         // analyser.getByteTimeDomainData(this.state.framerFrequencyData) // For Waves
-      };
+      }
 
       this.setState({
         audioContext,
@@ -197,7 +202,8 @@ class Audio extends Component {
         dataArray,
         bufferLength,
         framerFrequencyData: dataArray,
-        javascriptNode
+        javascriptNode,
+        audioContextCreatedTime
       })
 
       setTimeout(() => {
@@ -211,6 +217,11 @@ class Audio extends Component {
 
   loadSong(url) {
     const { audioContext } = this.state
+    let {
+      audioContextCreatedTime,
+      audioLoadOffsetTime
+    } = this.state
+
     const request = new XMLHttpRequest()
     request.open('GET', url, true)
     request.responseType = 'arraybuffer'
@@ -223,6 +234,16 @@ class Audio extends Component {
         this.setState({ currentSource })
         setTimeout(() => {
           this.playSound()
+          audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
+
+          if (audioLoadOffsetTime > audioContext.currentTime) {
+            audioLoadOffsetTime = audioContext.currentTime
+          }
+
+          this.setState({
+            audioContextCreatedTime,
+            audioLoadOffsetTime
+           })
         }, 200)
       }, function (error) {
         console.error(error)
@@ -386,39 +407,7 @@ class Audio extends Component {
     this.setState({ framerCountTicks, framerMaxTickSize})
   }
 
-  initTimeHandler() {
-    let {
-      audioContext,
-      timeControl
-    } = this.state
-
-    setTimeout(() => {
-      let rawTime = 0
-
-      if (audioContext && audioContext.currentTime) {
-        rawTime = parseInt(audioContext.currentTime || 0)
-      }
-
-      const secondsInMin = 60
-      let min = parseInt(rawTime / secondsInMin)
-      let seconds = rawTime - min * secondsInMin
-      if (min < 10) {
-        min = '0' + min
-      }
-      if (seconds < 10) {
-        seconds = '0' + seconds
-      }
-      const time = min + ':' + seconds
-      timeControl.textContent = time
-
-      this.setState({ timeControl })
-
-      this.initTimeHandler()
-    }, 300)
-  }
-
   sceneInit() {
-    // this.canvasConfigure()
     this.sceneInitHandlers()
 
     this.framerInit()
@@ -433,7 +422,7 @@ class Audio extends Component {
       this.canvasConfigure()
       this.framerInit()
       this.sceneRender()
-    };
+    }
   }
 
   startSceneRender() {
@@ -465,6 +454,7 @@ class Audio extends Component {
     this.framerDraw()
     this.trackerDraw()
     this.controlsDraw()
+    this.initTimeHandler()
   }
 
   controlsDraw() {
@@ -501,16 +491,16 @@ class Audio extends Component {
     const { trackerAngle } = this.state
 
   if (0 <= trackerAngle && trackerAngle < Math.PI / 2) {
-    return 1;
+    return 1
   }
   if (Math.PI / 2 <= trackerAngle && trackerAngle < Math.PI) {
-    return 2;
+    return 2
   }
   if (Math.PI < trackerAngle && trackerAngle < Math.PI * 3 / 2) {
-    return 3;
+    return 3
   }
   if (Math.PI * 3 / 2 <= trackerAngle && trackerAngle <= Math.PI * 2) {
-    return 4;
+    return 4
   }
 }
 
@@ -586,19 +576,19 @@ class Audio extends Component {
         switch (this.state.gainNode.gain.value) {
           case 0:
               delta = 0
-            break;
+            break
 
           case 0.5:
             delta = (((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef) / 2
-            break;
+            break
 
           case 1:
             delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
-            break;
+            break
 
           default:
             delta = ((framerFrequencyData[i] || 0) - lesser * coef) * canvasScaleCoef
-            break;
+            break
         }
       }
 
@@ -641,26 +631,26 @@ class Audio extends Component {
       framerIndex,
       framerCountTicks
     } = this.state
-    const m = (r - l) / 2;
-    const x = (angle - l);
-    let h;
+    const m = (r - l) / 2
+    const x = (angle - l)
+    let h
 
     if (x === m) {
-      return framerMaxTickSize;
+      return framerMaxTickSize
     }
-    const d = Math.abs(m - x);
-    const v = 70 * Math.sqrt(1 / d);
+    const d = Math.abs(m - x)
+    const v = 70 * Math.sqrt(1 / d)
     if (v > framerMaxTickSize) {
-      h = framerMaxTickSize - d;
+      h = framerMaxTickSize - d
     } else {
-      h = Math.max(framerTickSize, v);
+      h = Math.max(framerTickSize, v)
     }
 
     if (framerIndex > framerCountTicks) {
       this.setState({ framerIndex: 0 })
     }
 
-    return h;
+    return h
   }
 
   framerGetTickPoints() {
@@ -756,20 +746,20 @@ class Audio extends Component {
     const {
       currentSource,
       audioContext,
-      trackerPressButton
+      trackerPressButton,
+      audioLoadOffsetTime
     } = this.state
 
     if (currentSource !== null) {
       if (!currentSource.buffer) {
-        return;
+        return
       }
 
       if (!trackerPressButton) {
-        const angle = audioContext.currentTime / currentSource.buffer.duration * 2 * Math.PI || 0
+        const angle = (audioContext.currentTime - audioLoadOffsetTime) / currentSource.buffer.duration * 2 * Math.PI || 0
         this.setState({ trackerAngle: angle })
       }
 
-      this.durationUpdate()
       this.trackerDrawArc()
     }
   }
@@ -883,60 +873,67 @@ class Audio extends Component {
       Math.abs(event.pageY - canvasCy - canvasCoord.top) > sceneRadius
   }
 
-  durationUpdate() {
-    const {
-      currentSource,
-      audioContext
+  initTimeHandler() {
+    let {
+      audioContext,
+      timeControl,
+      audioLoadOffsetTime,
+      currentSource
     } = this.state
 
-    if (audioContext && audioContext.state !== 'suspended' && currentSource) {
-      this.setState({
-        duration: audioContext.currentTime
-      })
-    }
-    // audioContext.currentTime / currentSource.buffer.duration
-  }
+    setTimeout(() => {
+      let rawTime = 0
 
-  getDuration() {
-    const { duration } = this.state
-    if (duration === 0) {
-      return '00:00'
-    }
-    const time = (duration / 60).toString().split('.')
-    if (parseInt(time[0]) < 10) {
-      return `0${time[0]}:${time[1].substring(0, 2)}`
-    }
+      if (audioContext && audioContext.state !== 'suspended' && currentSource) {
+        // To start track from the middle for example, i just need add a startTime into calc, like:
+        // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
+        let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
 
-    return `${time[0]}:${time[1].substring(0, 2)}`
+        rawTime = parseInt(audioCurrentTime || 0)
+
+        const secondsInMin = 60
+        let min = parseInt(rawTime / secondsInMin)
+        let seconds = rawTime - min * secondsInMin
+        if (min < 10) {
+          min = `0${min}`
+        }
+        if (seconds < 10) {
+          seconds = `0${seconds}`
+        }
+        const time = `${min}:${seconds}`
+        timeControl.textContent = time
+      }
+      // this.setState({ timeControl, audioCurrentTime })
+    }, 300)
   }
 
   changeVolume() {
     let { gainNode } = this.state
     switch (this.state.gainNode.gain.value) {
       case 0:
-          gainNode.gain.value = 0.5;
-        break;
+          gainNode.gain.value = 0.5
+        break
 
       case 0.5:
-          gainNode.gain.value = 1;
-        break;
+          gainNode.gain.value = 1
+        break
 
       case 1:
-          gainNode.gain.value = 0;
-        break;
+          gainNode.gain.value = 0
+        break
 
       default:
-        break;
+        break
     }
 
     this.setState({ gainNode })
   }
 
   getVolume() {
-    let { gainNode } = this.state
+    const { gainNode } = this.state
 
     if (gainNode == null) {
-      return 0
+      return 1
     }
 
     return gainNode.gain.value
@@ -987,7 +984,7 @@ class Audio extends Component {
                 }
               </div>
             {/* <div className="song-duration">{this.state.duration}</div> */}
-            <div className="song-duration">{this.getDuration()}</div>
+            <div className="song-duration">{this.state.timeControl.textContent}</div>
             </div>
           </div>
       </div>
