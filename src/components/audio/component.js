@@ -221,36 +221,71 @@ class Audio extends Component {
       audioContextCreatedTime,
       audioLoadOffsetTime
     } = this.state
+    if (!!window.self.fetch) {
+      console.log('fetch')
+      fetch(url).then(response => {
+        return response.arrayBuffer()
+      }).then(responseBuffer => {
+        audioContext.decodeAudioData(responseBuffer, (buffer) => {
+          const completeBuffer = buffer
+          const currentSource = audioContext.createBufferSource()
+          const audioBuffer = audioContext.createBuffer(2, audioContext.sampleRate * (30 * 2), audioContext.sampleRate)
+          console.log({ audioBuffer, completeBuffer, response: responseBuffer })
+          currentSource.buffer = completeBuffer
+          this.setState({ currentSource })
+          setTimeout(() => {
+            this.playSound()
+            audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
 
-    const request = new XMLHttpRequest()
-    request.open('GET', url, true)
-    request.responseType = 'arraybuffer'
+            if (audioLoadOffsetTime > audioContext.currentTime) {
+              audioLoadOffsetTime = audioContext.currentTime
+            }
 
-    // Decode asynchronously
-    request.onload = () => {
-      audioContext.decodeAudioData(request.response, (buffer) => {
-        const currentSource = audioContext.createBufferSource()
-        currentSource.buffer = buffer
-        this.setState({ currentSource })
-        setTimeout(() => {
-          this.playSound()
-          audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
-
-          if (audioLoadOffsetTime > audioContext.currentTime) {
-            audioLoadOffsetTime = audioContext.currentTime
-          }
-
-          this.setState({
-            audioContextCreatedTime,
-            audioLoadOffsetTime,
-            isLoadingSong: false
-           })
-        }, 200)
-      }, function (error) {
-        console.error(error)
+            this.setState({
+              audioContextCreatedTime,
+              audioLoadOffsetTime,
+              isLoadingSong: false
+            })
+          }, 200)
+        }, function (error) {
+          console.error(error)
+        })
       })
+      
+    } else {
+      const request = new XMLHttpRequest()
+      request.open('GET', url, true)
+      request.responseType = 'arraybuffer'
+
+      // Decode asynchronously
+      request.onload = () => {
+        audioContext.decodeAudioData(request.response, (buffer) => {
+          const completeBuffer = buffer
+          const currentSource = audioContext.createBufferSource()
+          const audioBuffer = audioContext.createBuffer(2, audioContext.sampleRate * (30 * 2), audioContext.sampleRate)
+          console.log({ audioBuffer, completeBuffer, response: request.response })
+          currentSource.buffer = completeBuffer
+          this.setState({ currentSource })
+          setTimeout(() => {
+            this.playSound()
+            audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
+
+            if (audioLoadOffsetTime > audioContext.currentTime) {
+              audioLoadOffsetTime = audioContext.currentTime
+            }
+
+            this.setState({
+              audioContextCreatedTime,
+              audioLoadOffsetTime,
+              isLoadingSong: false
+            })
+          }, 200)
+        }, function (error) {
+          console.error(error)
+        })
+      }
+      request.send() 
     }
-    request.send()
   }
 
   playSound() {
