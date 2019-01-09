@@ -286,27 +286,29 @@ class Audio extends Component {
         throw Error('Content-Length response header unavailable');
       }
 
-      caches.open('mysite-dynamic').then((cache) => {
-        console.log('sw response:', response)
-        return cache.match(response).then((response) => {
-          return response || fetch(response).then((response) => {
-            cache.put(response, response.clone());
-            return response;
-          });
-        });
-      })
+      // caches.open('mysite-dynamic').then((cache) => {
+      //   console.log('sw response:', response)
+      //   return cache.match(response).then((response) => {
+      //     return response || fetch(response).then((response) => {
+      //       cache.put(response, response.clone());
+      //       return response;
+      //     });
+      //   });
+      // })
 
-      const stream = this.readAudioStream(response, contentLength, { all: false, sec: 3 })
+      const stream = this.readAudioStream(response, contentLength, { all: false, sec: 1 })
 
       return new Response(stream)
     }).then(response => {
       return response.arrayBuffer()
     }).then(responseBuffer => {
+      console.log('start decode audio')
       audioContext.decodeAudioData(responseBuffer, (buffer) => {
         const currentSource = audioContext.createBufferSource()
 
         currentSource.buffer = buffer
         this.setState({ currentSource }, () => {
+          console.log('audio decoded and starting music')
           this.playSound()
           audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
 
@@ -340,7 +342,7 @@ class Audio extends Component {
 
             if (!params.all) {
               if (((new Date() - startedStream) / 1000) >= (params.sec || 3)) {
-                console.log(`hye`)
+                console.log(`Close stream`)
                 controller.close()
                 return
               }
