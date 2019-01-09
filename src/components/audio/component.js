@@ -42,6 +42,7 @@ class Audio extends Component {
       audioContextCreatedTime: 0,
       audioLoadOffsetTime: 0,
       audioCurrentTime: 0,
+      isLoadingSong: false,
 
       /**
        * Canvas Context
@@ -241,7 +242,8 @@ class Audio extends Component {
 
           this.setState({
             audioContextCreatedTime,
-            audioLoadOffsetTime
+            audioLoadOffsetTime,
+            isLoadingSong: false
            })
         }, 200)
       }, function (error) {
@@ -286,7 +288,7 @@ class Audio extends Component {
   resumeSong() {
     const { firstPlay } = this.state
     if (firstPlay) {
-      // this.playSound()
+      this.setState({ isLoadingSong: true })
       this.init()
       this.setState({ firstPlay: false })
     } else {
@@ -332,8 +334,14 @@ class Audio extends Component {
   switchSong(musicIndex) {
     let {
       tracks,
-      currentSource
+      currentSource,
     } = this.state
+
+    const { isLoadingSong } = this.state
+
+    if (!isLoadingSong) {
+      this.setState({ isLoadingSong: true })
+    }
 
     if (currentSource) {
       currentSource.disconnect()
@@ -463,25 +471,25 @@ class Audio extends Component {
       scenePadding
     } = this.state
 
-    canvasContext.save()
-    canvasContext.beginPath()
-    canvasContext.fillStyle = 'rgba(97, 218, 251, 0.85)'
-    canvasContext.lineWidth = 1
-    let x = trackerR / Math.sqrt(Math.pow(Math.tan(trackerAngle), 2) + 1)
-    let y = Math.sqrt(trackerR * trackerR - x * x)
-    if (this.controlsGetQuadrant() === 2) {
-      x = -x
-    }
-    if (this.controlsGetQuadrant() === 3) {
-      x = -x
-      y = -y
-    }
-    if (this.controlsGetQuadrant() === 4) {
-      y = -y
-    }
-    canvasContext.arc(sceneRadius + scenePadding + x, sceneRadius + scenePadding + y, 10, 0, Math.PI * 2, false)
-    canvasContext.fill()
-    canvasContext.restore()
+      canvasContext.save()
+      canvasContext.beginPath()
+      canvasContext.fillStyle = 'rgba(97, 218, 251, 0.85)'
+      canvasContext.lineWidth = 1
+      let x = trackerR / Math.sqrt(Math.pow(Math.tan(trackerAngle), 2) + 1)
+      let y = Math.sqrt(trackerR * trackerR - x * x)
+      if (this.controlsGetQuadrant() === 2) {
+        x = -x
+      }
+      if (this.controlsGetQuadrant() === 3) {
+        x = -x
+        y = -y
+      }
+      if (this.controlsGetQuadrant() === 4) {
+        y = -y
+      }
+      canvasContext.arc(sceneRadius + scenePadding + x, sceneRadius + scenePadding + y, 10, 0, Math.PI * 2, false)
+      canvasContext.fill()
+      canvasContext.restore()
   }
 
   controlsGetQuadrant() {
@@ -744,7 +752,8 @@ class Audio extends Component {
       currentSource,
       audioContext,
       trackerPressButton,
-      audioLoadOffsetTime
+      audioLoadOffsetTime,
+      isLoadingSong
     } = this.state
 
     if (currentSource !== null) {
@@ -757,7 +766,9 @@ class Audio extends Component {
         this.setState({ trackerAngle: angle })
       }
 
-      this.trackerDrawArc()
+      if (!isLoadingSong) {
+        this.trackerDrawArc()
+      }
     }
   }
 
@@ -822,7 +833,8 @@ class Audio extends Component {
       canvasCoord,
       canvasContext,
       animatedInProgress,
-      trackerAngle
+      trackerAngle,
+      isLoadingSong
     } = this.state
     const mx = event.pageX
     const my = event.pageY
@@ -836,7 +848,7 @@ class Audio extends Component {
 
     this.setState({ trackerAngle: angle })
 
-    if (animatedInProgress) {
+    if (animatedInProgress && !isLoadingSong) {
       this.trackerStartAnimation()
     } else {
       this.setState({ trackerPrevAngle: trackerAngle})
@@ -957,8 +969,9 @@ class Audio extends Component {
                 <FastRewind style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.prevSong} />
               </div>
               <div className="pause-play-song">
-                {
-                  !this.state.playing
+              { this.state.isLoadingSong
+                ? <div className="loader"><div></div><div></div></div>
+                : !this.state.playing
                     ? <PlayArrow style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.resumeSong} />
                     : <Pause style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.suspendSong} />
                 }
