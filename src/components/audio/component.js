@@ -159,7 +159,6 @@ class Audio extends Component {
     this.canvasConfigure()
 
     setTimeout(() => {
-      // this.startPlayer()
       this.showPlayer()
     }, 200)
   }
@@ -371,8 +370,6 @@ class Audio extends Component {
     const size = Math.max(minSize, 1 /*document.body.clientHeight */)
     canvas.setAttribute('width', size)
     canvas.setAttribute('height', size)
-    //this.canvas.style.marginTop = -size / 2 + 'px'
-    //this.canvas.style.marginLeft = -size / 2 + 'px'
 
     const canvasWidth = size
     const canvasHeight = size
@@ -811,9 +808,6 @@ class Audio extends Component {
         this.setState({ trackerAnimateId: setTimeout(f, 20) })
       }
     }
-
-    // this.angle = this.prevAngle
-    // this.animateId = setTimeout(f, 20)
   }
 
   trackerStopAnimation() {
@@ -903,7 +897,6 @@ class Audio extends Component {
         const time = `${min}:${seconds}`
         timeControl.textContent = time
       }
-      // this.setState({ timeControl, audioCurrentTime })
     }, 300)
   }
 
