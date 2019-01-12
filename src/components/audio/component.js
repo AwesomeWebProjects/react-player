@@ -44,7 +44,7 @@ class Audio extends Component {
       audioCurrentTime: 0,
       isLoadingSong: false,
       audioStreamIndex: 0,
-      audioStreamData: [],
+      audioStreamData: null,
 
       /**
        * Canvas Context
@@ -119,6 +119,7 @@ class Audio extends Component {
     // @Player
     this.init = this.init.bind(this)
     this.loadSong = this.loadSong.bind(this)
+    this.loadFromStream = this.loadFromStream.bind(this)
     this.playSound = this.playSound.bind(this)
     this.startPlayer = this.startPlayer.bind(this)
     this.suspendSong = this.suspendSong.bind(this)
@@ -296,8 +297,9 @@ class Audio extends Component {
       //   });
       // })
 
-      const stream = this.readAudioStream(response, contentLength, { all: false, sec: 1 })
+      this.setState({ audioStreamData: { response: response.clone(), contentLength: response.headers.get('content-length')} })
 
+      const stream = this.readAudioStream(response, contentLength, { all: false, sec: 1 })
       return new Response(stream)
     }).then(response => {
       return response.arrayBuffer()
@@ -327,13 +329,13 @@ class Audio extends Component {
       })
     })
   }
-  
+
   readAudioStream(response, contentLength, params) {
     const total = parseInt(contentLength, 10);
     let loaded = 0
     const startedStream = new Date()
 
-    return new ReadableStream({
+    const stream = new ReadableStream({
       start(controller) {
         const reader = response.body.getReader();
         read()
@@ -342,12 +344,15 @@ class Audio extends Component {
 
             if (!params.all) {
               if (((new Date() - startedStream) / 1000) >= (params.sec || 3)) {
-                console.log(`Close stream`)
+                console.log(`Close stream frag`)
+                reader.releaseLock()
                 controller.close()
                 return
               }
             }
             if (done) {
+              console.log(`Close stream done`)
+              reader.releaseLock()
               controller.close()
               return
             }
@@ -364,6 +369,8 @@ class Audio extends Component {
         }
       }
     })
+
+    return stream
   }
 
   playSound() {
@@ -393,9 +400,55 @@ class Audio extends Component {
     this.setState({ playing: true })
   }
 
+  loadFromStream() {
+    let {
+      audioStreamData,
+      audioContext,
+      audioLoadOffsetTime,
+      audioContextCreatedTime
+    } = this.state
+
+    new Promise((resolve) => {
+      this.setState({ audioStreamData: { response: audioStreamData.response.clone(), contentLength: audioStreamData.response.headers.get('content-length') } })
+
+      const stream = this.readAudioStream(audioStreamData.response, audioStreamData.contentLength, { all: true, sec: 1 })
+      resolve(new Response(stream))
+    }).then(response => {
+      return response.arrayBuffer()
+    }).then(responseBuffer => {
+        audioContext.decodeAudioData(responseBuffer, (buffer) => {
+          const currentSource = audioContext.createBufferSource()
+
+          currentSource.buffer = buffer
+          this.setState({ currentSource }, () => {
+            console.log('audio decoded and starting music from stream')
+            this.playSound()
+            audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
+
+            if (audioLoadOffsetTime > audioContext.currentTime) {
+              audioLoadOffsetTime = audioContext.currentTime
+            }
+
+            this.setState({
+              audioContextCreatedTime,
+              audioLoadOffsetTime,
+              isLoadingSong: false
+            })
+          })
+        }, function (error) {
+          console.error(error)
+        })
+
+      })
+  }
+
   suspendSong() {
     this.state.audioContext.suspend()
     this.setState({ playing: false })
+    if (this.state.currentSource) {
+      this.state.currentSource.disconnect()
+    }
+    this.loadFromStream()
   }
 
   resumeSong() {
