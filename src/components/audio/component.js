@@ -43,7 +43,6 @@ class Audio extends Component {
       audioLoadOffsetTime: 0,
       audioCurrentTime: 0,
       isLoadingSong: false,
-      audioStreamIndex: 0,
       audioStreamData: null,
 
       /**
@@ -128,6 +127,7 @@ class Audio extends Component {
     this.nextSong = this.nextSong.bind(this)
     this.switchSong = this.switchSong.bind(this)
     this.showPlayer = this.showPlayer.bind(this)
+    this.audioXMLHttpRequest = this.audioXMLHttpRequest.bind(this)
     this.audioStream = this.audioStream.bind(this)
     this.readAudioStream = this.readAudioStream.bind(this)
     // @Framer
@@ -221,49 +221,53 @@ class Audio extends Component {
   }
 
   loadSong(url) {
+    if (window.fetch && window.ReadableStream) {
+      console.log('fetch and stream')
+      this.audioStream(url)
+    } else {
+      this.audioXMLHttpRequest(url)
+    }
+  }
+
+  audioXMLHttpRequest(url) {
     const { audioContext } = this.state
     let {
       audioContextCreatedTime,
       audioLoadOffsetTime
     } = this.state
 
-    if (window.fetch && window.ReadableStream) {
-      console.log('fetch and stream')
-      this.audioStream(url)
-    } else {
-      const request = new XMLHttpRequest()
-      request.open('GET', url, true)
-      request.responseType = 'arraybuffer'
+    const request = new XMLHttpRequest()
+    request.open('GET', url, true)
+    request.responseType = 'arraybuffer'
 
-      // Decode asynchronously
-      request.onload = () => {
-        audioContext.decodeAudioData(request.response, (buffer) => {
-          const completeBuffer = buffer
-          const currentSource = audioContext.createBufferSource()
-          const audioBuffer = audioContext.createBuffer(2, audioContext.sampleRate * (30 * 2), audioContext.sampleRate)
-          console.log({ audioBuffer, completeBuffer, response: request.response })
-          currentSource.buffer = completeBuffer
-          this.setState({ currentSource })
-          setTimeout(() => {
-            this.playSound()
-            audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
+    // Decode asynchronously
+    request.onload = () => {
+      audioContext.decodeAudioData(request.response, (buffer) => {
+        const completeBuffer = buffer
+        const currentSource = audioContext.createBufferSource()
+        const audioBuffer = audioContext.createBuffer(2, audioContext.sampleRate * (30 * 2), audioContext.sampleRate)
+        console.log({ audioBuffer, completeBuffer, response: request.response })
+        currentSource.buffer = completeBuffer
+        this.setState({ currentSource })
+        setTimeout(() => {
+          this.playSound()
+          audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
 
-            if (audioLoadOffsetTime > audioContext.currentTime) {
-              audioLoadOffsetTime = audioContext.currentTime
-            }
+          if (audioLoadOffsetTime > audioContext.currentTime) {
+            audioLoadOffsetTime = audioContext.currentTime
+          }
 
-            this.setState({
-              audioContextCreatedTime,
-              audioLoadOffsetTime,
-              isLoadingSong: false
-            })
-          }, 200)
-        }, function (error) {
-          console.error(error)
-        })
-      }
-      request.send()
+          this.setState({
+            audioContextCreatedTime,
+            audioLoadOffsetTime,
+            isLoadingSong: false
+          })
+        }, 200)
+      }, function (error) {
+        console.error(error)
+      })
     }
+    request.send()
   }
 
   audioStream(url) {
