@@ -1142,7 +1142,7 @@ class Audio extends Component {
         // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
         let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
 
-        if ((this.state.isLocalHost ? audioCurrentTime > 5 : audioCurrentTime > 15) && !playingFullMusic) {
+        if ((currentSource.buffer.duration - 5) && !playingFullMusic) {
           if (this.state.isLoadingFullSong) {
             return
           } else {
