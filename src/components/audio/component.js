@@ -315,7 +315,7 @@ class Audio extends Component {
 
       this.setState({ audioStreamData: { response: response.clone(), contentLength: response.headers.get('content-length')} })
 
-      const stream = this.readAudioStream(response, contentLength, { all: false, sec: this.state.isLocalHost ? 0.05 : 0.5})
+      const stream = this.readAudioStream(response, contentLength, { all: false, sec: this.state.isLocalHost ? 0.05 : 0.1})
       return new Response(stream)
     }).then(response => {
       return response.arrayBuffer()
