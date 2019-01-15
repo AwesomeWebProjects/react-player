@@ -315,7 +315,7 @@ class Audio extends Component {
 
       this.setState({ audioStreamData: { response: response.clone(), contentLength: response.headers.get('content-length')} })
 
-      const stream = this.readAudioStream(response, contentLength, { all: false, sec: this.state.isLocalHost ? 0.05 : 0.5 })
+      const stream = this.readAudioStream(response, contentLength, { all: false, sec: 3, amount: 1050478 })
       return new Response(stream)
     }).then(response => {
       return response.arrayBuffer()
@@ -359,11 +359,25 @@ class Audio extends Component {
           reader.read().then(({ done, value }) => {
 
             if (!params.all) {
-              if (((new Date() - startedStream) / 1000) >= (params.sec || 1)) {
-                console.log(`Close stream frag`)
-                reader.releaseLock()
-                controller.close()
-                return
+              if (params.amount) {
+                if (params.amount < total && loaded >= 65536) {
+                  console.log(`Close stream frag - amount`)
+                  reader.releaseLock()
+                  controller.close()
+                  return
+                } else if (loaded >= (65536 * 4)) { // 262.144
+                  console.log(`Close stream frag - amount`)
+                  reader.releaseLock()
+                  controller.close()
+                  return
+                }
+              } else {
+                  if (((new Date() - startedStream) / 1000) >= (params.sec || 5)) {
+                    console.log(`Close stream frag - time`)
+                    reader.releaseLock()
+                    controller.close()
+                    return
+                  }
               }
             }
             if (done) {
@@ -481,7 +495,7 @@ class Audio extends Component {
     new Promise((resolve) => {
       this.setState({ audioStreamData: { response: audioStreamData.response.clone(), contentLength: audioStreamData.response.headers.get('content-length') } })
 
-      const stream = this.readAudioStream(audioStreamData.response, audioStreamData.contentLength, { all: true, sec: 1 })
+      const stream = this.readAudioStream(audioStreamData.response, audioStreamData.contentLength, { all: true, sec: 1, amount: 1050478 })
       resolve(new Response(stream))
     }).then(response => {
       return response.arrayBuffer()
@@ -1142,7 +1156,7 @@ class Audio extends Component {
         // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
         let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
 
-        if ((currentSource.buffer.duration - 5) && !playingFullMusic) {
+        if (audioCurrentTime >= (currentSource.buffer.duration - 3) && !playingFullMusic) {
           if (this.state.isLoadingFullSong) {
             return
           } else {
