@@ -2,8 +2,7 @@ import React, { Component } from 'react'
 import './style.css'
 import rise from '../../assets/rise.mp3'
 import fantastic from '../../assets/fantastic.mp3'
-// import ParticleButton from '../button/component'
-// import buttonSamples from './button-samples'
+
 import {
   PlayArrow,
   Pause,
@@ -107,23 +106,8 @@ class Audio extends Component {
        * Misc
        */
       initialFixedTicks: false,
-      isLocalHost: Boolean(
-        window.location.hostname === 'localhost' ||
-        // [::1] is the IPv6 localhost address.
-        window.location.hostname === '[::1]' ||
-        // 127.0.0.1/8 is considered localhost for IPv4.
-        window.location.hostname.match(
-          /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-        )
-      )
+      hasStreamSupport: !!window.fetch && !!window.ReadableStream
     }
-
-    /**
-     * vars
-     */
-    // This button can be used to download button
-    // this.initButton = buttonSamples[12].buttonStyles
-    // this.initButtonOptions = buttonSamples[12].buttonOptions
 
     /**
      * functions
@@ -281,7 +265,9 @@ class Audio extends Component {
   }
 
   loadSong(url) {
-    if (window.fetch && window.ReadableStream) {
+    const { hasStreamSupport } = this.state
+
+    if (hasStreamSupport) {
       console.log('fetch and stream')
       this.audioStream(url)
     } else {
@@ -319,6 +305,7 @@ class Audio extends Component {
           this.setState({
             audioContextCreatedTime,
             audioLoadOffsetTime,
+            playingFullMusic: true,
             isLoadingSong: false
           })
         }, 200)
@@ -345,9 +332,9 @@ class Audio extends Component {
         throw Error('ReadableStream not yet supported in this browser.')
       }
 
-      const contentLength = response.headers.get('content-length');
+      const contentLength = response.headers.get('content-length')
       if (!contentLength) {
-        throw Error('Content-Length response header unavailable');
+        throw Error('Content-Length response header unavailable')
       }
 
       // Save the music with SW for further requests
@@ -355,10 +342,10 @@ class Audio extends Component {
       //   console.log('sw response:', response)
       //   return cache.match(response).then((response) => {
       //     return response || fetch(response).then((response) => {
-      //       cache.put(response, response.clone());
-      //       return response;
-      //     });
-      //   });
+      //       cache.put(response, response.clone())
+      //       return response
+      //     })
+      //   })
       // })
 
       this.setState({ audioStreamData: { response: response.clone(), contentLength: response.headers.get('content-length')} })
@@ -400,13 +387,13 @@ class Audio extends Component {
   }
 
   readAudioStream(response, contentLength, params) {
-    const total = parseInt(contentLength, 10);
+    const total = parseInt(contentLength, 10)
     let loaded = 0
     const startedStream = new Date()
 
     const stream = new ReadableStream({
       start(controller) {
-        const reader = response.body.getReader();
+        const reader = response.body.getReader()
         read()
         function read() {
           reader.read().then(({ done, value }) => {
@@ -440,13 +427,13 @@ class Audio extends Component {
               return
             }
 
-            loaded += value.byteLength;
+            loaded += value.byteLength
             console.log({ loaded, total }, (new Date() - startedStream) / 1000)
             controller.enqueue(value)
 
             read()
           }).catch(error => {
-            console.error(error);
+            console.error(error)
             controller.error(error)
           })
         }
@@ -812,19 +799,19 @@ class Audio extends Component {
   controlsGetQuadrant() {
     const { trackerAngle } = this.state
 
-  if (0 <= trackerAngle && trackerAngle < Math.PI / 2) {
-    return 1
+    if (0 <= trackerAngle && trackerAngle < Math.PI / 2) {
+      return 1
+    }
+    if (Math.PI / 2 <= trackerAngle && trackerAngle < Math.PI) {
+      return 2
+    }
+    if (Math.PI < trackerAngle && trackerAngle < Math.PI * 3 / 2) {
+      return 3
+    }
+    if (Math.PI * 3 / 2 <= trackerAngle && trackerAngle <= Math.PI * 2) {
+      return 4
+    }
   }
-  if (Math.PI / 2 <= trackerAngle && trackerAngle < Math.PI) {
-    return 2
-  }
-  if (Math.PI < trackerAngle && trackerAngle < Math.PI * 3 / 2) {
-    return 3
-  }
-  if (Math.PI * 3 / 2 <= trackerAngle && trackerAngle <= Math.PI * 2) {
-    return 4
-  }
-}
 
   framerDraw() {
     this.framerDrawTicks()
@@ -887,7 +874,7 @@ class Audio extends Component {
     } = this.state
 
     const ticks = this.framerGetTickPoints()
-    let x1, y1, x2, y2, m = [], tick, k
+    let x1, y1, x2, y2, ticksArray = [], tick, k
     const lesser = 160
     const allScales = []
     for (let i = 0, len = ticks.length; i < len; ++i) {
@@ -932,7 +919,7 @@ class Audio extends Component {
       y1 = tick.y * (sceneRadius - framerTickSize)
       x2 = x1 * k
       y2 = y1 * k
-      m.push({ x1: x1, y1: y1, x2: x2, y2: y2 })
+      ticksArray.push({ x1: x1, y1: y1, x2: x2, y2: y2 })
       if (i < 20) {
         let scale = delta / 50
         scale = scale < 1 ? 1 : scale
@@ -943,7 +930,7 @@ class Audio extends Component {
     if (framerTransformScale) {
       canvas.style.transform = `scale('${sum}')`
     }
-    return m
+    return ticksArray
   }
 
   framerGetSize(angle, l, r) {
@@ -955,24 +942,24 @@ class Audio extends Component {
     } = this.state
     const m = (r - l) / 2
     const x = (angle - l)
-    let h
+    let size
 
     if (x === m) {
       return framerMaxTickSize
     }
-    const d = Math.abs(m - x)
-    const v = 70 * Math.sqrt(1 / d)
+    const diameter = Math.abs(m - x)
+    const v = 70 * Math.sqrt(1 / diameter)
     if (v > framerMaxTickSize) {
-      h = framerMaxTickSize - d
+      size = framerMaxTickSize - diameter
     } else {
-      h = Math.max(framerTickSize, v)
+      size = Math.max(framerTickSize, v)
     }
 
     if (framerIndex > framerCountTicks) {
       this.setState({ framerIndex: 0 })
     }
 
-    return h
+    return size
   }
 
   framerGetTickPoints() {
@@ -980,8 +967,8 @@ class Audio extends Component {
       framerCountTicks,
       framerPI
     } = this.state
-
     const coords = [], step = framerPI / framerCountTicks
+
     for (let deg = 0; deg < framerPI; deg += step) {
       const rad = deg * Math.PI / (framerPI / 2)
       coords.push({ x: Math.cos(rad), y: -Math.sin(rad), angle: deg })
@@ -1124,7 +1111,8 @@ class Audio extends Component {
     let angle = trackerAngle
     const l = Math.abs(trackerAngle) - Math.abs(trackerPrevAngle)
     let step = l / trackerAnimationCount, i = 0
-    const f = () => {
+
+    const calc = () => {
       angle += step
       if (++i === trackerAnimationCount) {
         this.setState({
@@ -1133,7 +1121,7 @@ class Audio extends Component {
           trackerAnimatedInProgress: false
         })
       } else {
-        this.setState({ trackerAnimateId: setTimeout(f, 20) })
+        this.setState({ trackerAnimateId: setTimeout(calc, 20) })
       }
     }
   }
@@ -1153,9 +1141,11 @@ class Audio extends Component {
       trackerAngle,
       isLoadingSong
     } = this.state
+
     const mx = event.pageX
     const my = event.pageY
     let angle = Math.atan((my - canvasCy - canvasCoord.top) / (mx - canvasCx - canvasCoord.left))
+
     if (mx < canvasContext + canvasCoord.left) {
       angle = Math.PI + angle
     }
@@ -1180,8 +1170,10 @@ class Audio extends Component {
       sceneRadius,
       trackerInnerDelta
     } = this.state
+
     const x = Math.abs(event.pageX - canvasCx - canvasCoord.left)
     const y = Math.abs(event.pageY - canvasCy - canvasCoord.top)
+
     return Math.sqrt(x * x + y * y) < sceneRadius - 3 * trackerInnerDelta
   }
 
@@ -1197,33 +1189,36 @@ class Audio extends Component {
   }
 
   initTimeHandler() {
-    let {
+    const {
       audioContext,
-      timeControl,
       audioLoadOffsetTime,
       currentSource,
-      playingFullMusic
+      playingFullMusic,
+      hasStreamSupport
+    } = this.state
+
+    let {
+      timeControl,
     } = this.state
 
     setTimeout(() => {
       let rawTime = 0
 
       if (audioContext && audioContext.state !== 'suspended' && currentSource) {
-        // To start track from the middle for example, i just need add a startTime into calc, like:
+        // To start time of the track from the middle for example, i just need add a startTime (offset) into calc
         // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
         let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
 
-        if (audioCurrentTime >= (currentSource.buffer.duration - 3.5) && !playingFullMusic) {
+        if (audioCurrentTime >= (currentSource.buffer.duration - 3.5) && !playingFullMusic && hasStreamSupport) {
           if (this.state.isLoadingFullSong || !this.state.canLoadFullSong) {
             return
           } else {
-            this.setState({ playingFullMusic: true, isLoadingFullSong: true })
+            this.setState({ isLoadingFullSong: true })
             this.preLoadCompleteSong()
           }
         }
 
         rawTime = parseInt(audioCurrentTime || 0)
-        // console.log(currentSource.buffer.duration, { audioCurrentTime })
 
         const secondsInMin = 60
         let min = parseInt(rawTime / secondsInMin)
@@ -1278,14 +1273,6 @@ class Audio extends Component {
   render() {
     return (
       <div className="Audio">
-        {/* <ParticleButton
-          text="Play"
-          background="transparent"
-          buttonStyles={this.initButton}
-          buttonOptions={this.initButtonOptions}
-          onStartAnimation={this.startPlayer}
-          onFinishAnimation={this.showPlayer}>
-        </ParticleButton> */}
           <div className="Player">
             <canvas id="Player-canvas" key="Player-canvas"></canvas>
             <div className="song-info">
@@ -1317,7 +1304,6 @@ class Audio extends Component {
                     : <VolumeUp style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
                 }
               </div>
-            {/* <div className="song-duration">{this.state.duration}</div> */}
             <div className="song-duration">{this.state.timeControl.textContent}</div>
             </div>
           </div>
