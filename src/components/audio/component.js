@@ -1200,11 +1200,12 @@ class Audio extends Component {
       let rawTime = 0
 
       if (audioContext && audioContext.state !== 'suspended' && currentSource) {
-        // To start time of the track from the middle for example, i just need add a startTime (offset) into calc
+        // When start time of the track from the middle for example, need add a startTime (offset) into calc
         // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
         let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
+        const currentDuration = currentSource.buffer.duration
 
-        if (audioCurrentTime >= (currentSource.buffer.duration - 3.5) && !playingFullMusic && hasStreamSupport) {
+        if (audioCurrentTime >= (currentDuration - 3.5) && !playingFullMusic && hasStreamSupport) {
           if (this.state.isLoadingFullSong || !this.state.canLoadFullSong) {
             return
           } else {
@@ -1213,8 +1214,8 @@ class Audio extends Component {
           }
         }
 
-        console.log(audioCurrentTime, currentSource.buffer.duration, audioCurrentTime >= currentSource.buffer.duration)
-        if (playingFullMusic && audioCurrentTime >= (currentSource.buffer.duration - 1.5)) {
+        console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)
+        if (playingFullMusic && audioCurrentTime >= (currentDuration - 1.5)) {
           this.nextSong()
         }
 
