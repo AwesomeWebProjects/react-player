@@ -106,15 +106,7 @@ class Audio extends Component {
        * Misc
        */
       initialFixedTicks: false,
-      isLocalHost: Boolean(
-        window.location.hostname === 'localhost' ||
-        // [::1] is the IPv6 localhost address.
-        window.location.hostname === '[::1]' ||
-        // 127.0.0.1/8 is considered localhost for IPv4.
-        window.location.hostname.match(
-          /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-        )
-      )
+      hasStreamSupport: !!window.fetch && !!window.ReadableStream
     }
 
     /**
@@ -273,7 +265,9 @@ class Audio extends Component {
   }
 
   loadSong(url) {
-    if (window.fetch && window.ReadableStream) {
+    const { hasStreamSupport } = this.state
+
+    if (hasStreamSupport) {
       console.log('fetch and stream')
       this.audioStream(url)
     } else {
@@ -311,6 +305,7 @@ class Audio extends Component {
           this.setState({
             audioContextCreatedTime,
             audioLoadOffsetTime,
+            playingFullMusic: true,
             isLoadingSong: false
           })
         }, 200)
@@ -1194,12 +1189,16 @@ class Audio extends Component {
   }
 
   initTimeHandler() {
-    let {
+    const {
       audioContext,
-      timeControl,
       audioLoadOffsetTime,
       currentSource,
-      playingFullMusic
+      playingFullMusic,
+      hasStreamSupport
+    } = this.state
+
+    let {
+      timeControl,
     } = this.state
 
     setTimeout(() => {
@@ -1210,11 +1209,11 @@ class Audio extends Component {
         // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
         let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
 
-        if (audioCurrentTime >= (currentSource.buffer.duration - 3.5) && !playingFullMusic) {
+        if (audioCurrentTime >= (currentSource.buffer.duration - 3.5) && !playingFullMusic && hasStreamSupport) {
           if (this.state.isLoadingFullSong || !this.state.canLoadFullSong) {
             return
           } else {
-            this.setState({ playingFullMusic: true, isLoadingFullSong: true })
+            this.setState({ isLoadingFullSong: true })
             this.preLoadCompleteSong()
           }
         }
