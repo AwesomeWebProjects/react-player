@@ -315,7 +315,7 @@ class Audio extends Component {
 
       this.setState({ audioStreamData: { response: response.clone(), contentLength: response.headers.get('content-length')} })
 
-      const stream = this.readAudioStream(response, contentLength, { all: false, sec: 3, amount: 1050478 })
+      const stream = this.readAudioStream(response, contentLength, { all: false, sec: 3, amount: 1245184 })
       return new Response(stream)
     }).then(response => {
       return response.arrayBuffer()
@@ -360,12 +360,12 @@ class Audio extends Component {
 
             if (!params.all) {
               if (params.amount) {
-                if (params.amount < total && loaded >= 65536) {
+                if (params.amount < total && loaded >= params.amount) {
                   console.log(`Close stream frag - amount`)
                   reader.releaseLock()
                   controller.close()
                   return
-                } else if (loaded >= (65536 * 4)) { // 262.144
+                } else if (loaded >= (65536 * 5)) { // 327.680
                   console.log(`Close stream frag - amount`)
                   reader.releaseLock()
                   controller.close()
@@ -1156,7 +1156,7 @@ class Audio extends Component {
         // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
         let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
 
-        if (audioCurrentTime >= (currentSource.buffer.duration - 3) && !playingFullMusic) {
+        if (audioCurrentTime >= (currentSource.buffer.duration - 3.5) && !playingFullMusic) {
           if (this.state.isLoadingFullSong) {
             return
           } else {
