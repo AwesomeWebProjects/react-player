@@ -1213,6 +1213,11 @@ class Audio extends Component {
           }
         }
 
+        console.log(audioCurrentTime, currentSource.buffer.duration, audioCurrentTime >= currentSource.buffer.duration)
+        if (playingFullMusic && audioCurrentTime >= (currentSource.buffer.duration - 1.5)) {
+          this.nextSong()
+        }
+
         rawTime = parseInt(audioCurrentTime || 0)
 
         const secondsInMin = 60
@@ -1227,7 +1232,7 @@ class Audio extends Component {
         const time = `${min}:${seconds}`
         timeControl.textContent = time
       }
-    }, 300)
+    }, 600)
   }
 
   changeVolume() {
