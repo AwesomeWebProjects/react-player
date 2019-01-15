@@ -2,8 +2,7 @@ import React, { Component } from 'react'
 import './style.css'
 import rise from '../../assets/rise.mp3'
 import fantastic from '../../assets/fantastic.mp3'
-// import ParticleButton from '../button/component'
-// import buttonSamples from './button-samples'
+
 import {
   PlayArrow,
   Pause,
@@ -117,13 +116,6 @@ class Audio extends Component {
         )
       )
     }
-
-    /**
-     * vars
-     */
-    // This button can be used to download button
-    // this.initButton = buttonSamples[12].buttonStyles
-    // this.initButtonOptions = buttonSamples[12].buttonOptions
 
     /**
      * functions
