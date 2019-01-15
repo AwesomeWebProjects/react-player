@@ -173,6 +173,7 @@ class Audio extends Component {
     this.getVolume = this.getVolume.bind(this)
     this.initTimeHandler = this.initTimeHandler.bind(this)
     this.preLoadCompleteSong = this.preLoadCompleteSong.bind(this)
+    this.initEvents = this.initEvents.bind(this)
   }
 
   componentDidMount() {
@@ -190,6 +191,49 @@ class Audio extends Component {
 
   startPlayer() {
     this.init()
+  }
+
+  initEvents() {
+    document.addEventListener("keydown", (event) => {
+      const { audioContext } = this.state
+      const key = event.which
+
+      switch (key) {
+        // https://css-tricks.com/snippets/javascript/javascript-keycodes/
+        case 32:
+          /**
+           * key pressed: Spacebar
+           * pause or play song
+           */
+          if (audioContext.state === 'suspended') {
+            audioContext.resume()
+            this.setState({ playing: true })
+          } else {
+            audioContext.suspend()
+            this.setState({ playing: false })
+          }
+          break
+
+        case 78:
+          /**
+           * key pressed: N
+           * go to the next song
+           */
+          this.nextSong()
+          break
+
+        case 66:
+          /**
+           * key pressed: B
+           * back to the prev song
+           */
+          this.prevSong()
+          break
+
+        default:
+          break
+      }
+    })
   }
 
   init() {
@@ -213,6 +257,8 @@ class Audio extends Component {
         analyser.getByteFrequencyData(this.state.framerFrequencyData) // For Bits
         // analyser.getByteTimeDomainData(this.state.framerFrequencyData) // For Waves
       }
+
+      this.initEvents()
 
       this.setState({
         audioContext,
