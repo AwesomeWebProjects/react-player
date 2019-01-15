@@ -887,7 +887,7 @@ class Audio extends Component {
     } = this.state
 
     const ticks = this.framerGetTickPoints()
-    let x1, y1, x2, y2, m = [], tick, k
+    let x1, y1, x2, y2, ticksArray = [], tick, k
     const lesser = 160
     const allScales = []
     for (let i = 0, len = ticks.length; i < len; ++i) {
@@ -932,7 +932,7 @@ class Audio extends Component {
       y1 = tick.y * (sceneRadius - framerTickSize)
       x2 = x1 * k
       y2 = y1 * k
-      m.push({ x1: x1, y1: y1, x2: x2, y2: y2 })
+      ticksArray.push({ x1: x1, y1: y1, x2: x2, y2: y2 })
       if (i < 20) {
         let scale = delta / 50
         scale = scale < 1 ? 1 : scale
@@ -943,7 +943,7 @@ class Audio extends Component {
     if (framerTransformScale) {
       canvas.style.transform = `scale('${sum}')`
     }
-    return m
+    return ticksArray
   }
 
   framerGetSize(angle, l, r) {
@@ -955,24 +955,24 @@ class Audio extends Component {
     } = this.state
     const m = (r - l) / 2
     const x = (angle - l)
-    let h
+    let size
 
     if (x === m) {
       return framerMaxTickSize
     }
-    const d = Math.abs(m - x)
-    const v = 70 * Math.sqrt(1 / d)
+    const diameter = Math.abs(m - x)
+    const v = 70 * Math.sqrt(1 / diameter)
     if (v > framerMaxTickSize) {
-      h = framerMaxTickSize - d
+      size = framerMaxTickSize - diameter
     } else {
-      h = Math.max(framerTickSize, v)
+      size = Math.max(framerTickSize, v)
     }
 
     if (framerIndex > framerCountTicks) {
       this.setState({ framerIndex: 0 })
     }
 
-    return h
+    return size
   }
 
   framerGetTickPoints() {
@@ -980,8 +980,8 @@ class Audio extends Component {
       framerCountTicks,
       framerPI
     } = this.state
-
     const coords = [], step = framerPI / framerCountTicks
+
     for (let deg = 0; deg < framerPI; deg += step) {
       const rad = deg * Math.PI / (framerPI / 2)
       coords.push({ x: Math.cos(rad), y: -Math.sin(rad), angle: deg })
@@ -1124,7 +1124,8 @@ class Audio extends Component {
     let angle = trackerAngle
     const l = Math.abs(trackerAngle) - Math.abs(trackerPrevAngle)
     let step = l / trackerAnimationCount, i = 0
-    const f = () => {
+
+    const calc = () => {
       angle += step
       if (++i === trackerAnimationCount) {
         this.setState({
@@ -1133,7 +1134,7 @@ class Audio extends Component {
           trackerAnimatedInProgress: false
         })
       } else {
-        this.setState({ trackerAnimateId: setTimeout(f, 20) })
+        this.setState({ trackerAnimateId: setTimeout(calc, 20) })
       }
     }
   }
@@ -1153,9 +1154,11 @@ class Audio extends Component {
       trackerAngle,
       isLoadingSong
     } = this.state
+
     const mx = event.pageX
     const my = event.pageY
     let angle = Math.atan((my - canvasCy - canvasCoord.top) / (mx - canvasCx - canvasCoord.left))
+
     if (mx < canvasContext + canvasCoord.left) {
       angle = Math.PI + angle
     }
@@ -1180,8 +1183,10 @@ class Audio extends Component {
       sceneRadius,
       trackerInnerDelta
     } = this.state
+
     const x = Math.abs(event.pageX - canvasCx - canvasCoord.left)
     const y = Math.abs(event.pageY - canvasCy - canvasCoord.top)
+
     return Math.sqrt(x * x + y * y) < sceneRadius - 3 * trackerInnerDelta
   }
 
@@ -1209,7 +1214,7 @@ class Audio extends Component {
       let rawTime = 0
 
       if (audioContext && audioContext.state !== 'suspended' && currentSource) {
-        // To start track from the middle for example, i just need add a startTime into calc, like:
+        // To start time of the track from the middle for example, i just need add a startTime (offset) into calc
         // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
         let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
 
@@ -1223,7 +1228,6 @@ class Audio extends Component {
         }
 
         rawTime = parseInt(audioCurrentTime || 0)
-        // console.log(currentSource.buffer.duration, { audioCurrentTime })
 
         const secondsInMin = 60
         let min = parseInt(rawTime / secondsInMin)
@@ -1278,14 +1282,6 @@ class Audio extends Component {
   render() {
     return (
       <div className="Audio">
-        {/* <ParticleButton
-          text="Play"
-          background="transparent"
-          buttonStyles={this.initButton}
-          buttonOptions={this.initButtonOptions}
-          onStartAnimation={this.startPlayer}
-          onFinishAnimation={this.showPlayer}>
-        </ParticleButton> */}
           <div className="Player">
             <canvas id="Player-canvas" key="Player-canvas"></canvas>
             <div className="song-info">
@@ -1317,7 +1313,6 @@ class Audio extends Component {
                     : <VolumeUp style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
                 }
               </div>
-            {/* <div className="song-duration">{this.state.duration}</div> */}
             <div className="song-duration">{this.state.timeControl.textContent}</div>
             </div>
           </div>
