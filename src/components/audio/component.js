@@ -324,6 +324,10 @@ class Audio extends Component {
     }).then(responseBuffer => {
       console.log('start decode audio')
       audioContext.decodeAudioData(responseBuffer, (buffer) => {
+        if (this.state.currentSource !== null) {
+          this.state.currentSource.disconnect()
+        }
+
         const currentSource = audioContext.createBufferSource()
 
         currentSource.buffer = buffer
