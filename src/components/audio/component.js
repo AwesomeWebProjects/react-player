@@ -345,9 +345,9 @@ class Audio extends Component {
         throw Error('ReadableStream not yet supported in this browser.')
       }
 
-      const contentLength = response.headers.get('content-length');
+      const contentLength = response.headers.get('content-length')
       if (!contentLength) {
-        throw Error('Content-Length response header unavailable');
+        throw Error('Content-Length response header unavailable')
       }
 
       // Save the music with SW for further requests
@@ -355,10 +355,10 @@ class Audio extends Component {
       //   console.log('sw response:', response)
       //   return cache.match(response).then((response) => {
       //     return response || fetch(response).then((response) => {
-      //       cache.put(response, response.clone());
-      //       return response;
-      //     });
-      //   });
+      //       cache.put(response, response.clone())
+      //       return response
+      //     })
+      //   })
       // })
 
       this.setState({ audioStreamData: { response: response.clone(), contentLength: response.headers.get('content-length')} })
@@ -400,13 +400,13 @@ class Audio extends Component {
   }
 
   readAudioStream(response, contentLength, params) {
-    const total = parseInt(contentLength, 10);
+    const total = parseInt(contentLength, 10)
     let loaded = 0
     const startedStream = new Date()
 
     const stream = new ReadableStream({
       start(controller) {
-        const reader = response.body.getReader();
+        const reader = response.body.getReader()
         read()
         function read() {
           reader.read().then(({ done, value }) => {
@@ -440,13 +440,13 @@ class Audio extends Component {
               return
             }
 
-            loaded += value.byteLength;
+            loaded += value.byteLength
             console.log({ loaded, total }, (new Date() - startedStream) / 1000)
             controller.enqueue(value)
 
             read()
           }).catch(error => {
-            console.error(error);
+            console.error(error)
             controller.error(error)
           })
         }
@@ -812,19 +812,19 @@ class Audio extends Component {
   controlsGetQuadrant() {
     const { trackerAngle } = this.state
 
-  if (0 <= trackerAngle && trackerAngle < Math.PI / 2) {
-    return 1
+    if (0 <= trackerAngle && trackerAngle < Math.PI / 2) {
+      return 1
+    }
+    if (Math.PI / 2 <= trackerAngle && trackerAngle < Math.PI) {
+      return 2
+    }
+    if (Math.PI < trackerAngle && trackerAngle < Math.PI * 3 / 2) {
+      return 3
+    }
+    if (Math.PI * 3 / 2 <= trackerAngle && trackerAngle <= Math.PI * 2) {
+      return 4
+    }
   }
-  if (Math.PI / 2 <= trackerAngle && trackerAngle < Math.PI) {
-    return 2
-  }
-  if (Math.PI < trackerAngle && trackerAngle < Math.PI * 3 / 2) {
-    return 3
-  }
-  if (Math.PI * 3 / 2 <= trackerAngle && trackerAngle <= Math.PI * 2) {
-    return 4
-  }
-}
 
   framerDraw() {
     this.framerDrawTicks()
