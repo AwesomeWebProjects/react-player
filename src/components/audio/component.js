@@ -44,6 +44,7 @@ class Audio extends Component {
       audioCurrentTime: 0,
       isLoadingSong: false,
       isLoadingFullSong: false,
+      canLoadFullSong: true,
       playingFullMusic: false,
       audioStreamData: null,
       trackerEnabled: false, // @NOTE: tracker disabled until solve the thing of re-read stream data and not re-set the position of tracker
@@ -303,6 +304,7 @@ class Audio extends Component {
         throw Error('Content-Length response header unavailable');
       }
 
+      // Save the music with SW for further requests
       // caches.open('mysite-dynamic').then((cache) => {
       //   console.log('sw response:', response)
       //   return cache.match(response).then((response) => {
@@ -337,7 +339,8 @@ class Audio extends Component {
           this.setState({
             audioContextCreatedTime,
             audioLoadOffsetTime,
-            isLoadingSong: false
+            isLoadingSong: false,
+            canLoadFullSong: true
           })
         })
       }, function (error) {
@@ -469,7 +472,8 @@ class Audio extends Component {
           this.setState({
             audioContextCreatedTime,
             audioLoadOffsetTime,
-            isLoadingSong: false
+            isLoadingSong: false,
+            canLoadFullSong: true
           })
         })
       }, function (error) {
@@ -484,6 +488,7 @@ class Audio extends Component {
       analyser,
       gainNode,
       javascriptNode,
+      canLoadFullSong
     } = this.state
 
     let {
@@ -501,37 +506,39 @@ class Audio extends Component {
       return response.arrayBuffer()
     }).then(responseBuffer => {
       audioContext.decodeAudioData(responseBuffer, (buffer) => {
-        this.state.currentSource.disconnect()
+        if (canLoadFullSong) {
+          this.state.currentSource.disconnect()
 
-        const currentSource = audioContext.createBufferSource()
-        currentSource.buffer = buffer
+          const currentSource = audioContext.createBufferSource()
+          currentSource.buffer = buffer
 
-        const offset = (audioContext.currentTime - audioLoadOffsetTime)
-
-        const source = currentSource
-        source.connect(analyser)
-        analyser.connect(gainNode)
-        gainNode.connect(audioContext.destination)
-        javascriptNode.connect(audioContext.destination)
-
-        source.start(offset, offset)
-
-        if (audioContext.state === 'suspended') {
-          audioContext.resume()
-        }
-
-        this.setState({ playing: true, isLoadingFullSong: false })
-
-        this.setState({ currentSource }, () => {
-          console.log('audio decoded and starting music from stream - full song loaded')
           const offset = (audioContext.currentTime - audioLoadOffsetTime)
-          console.log({
-            offset,
-            duration: currentSource.buffer.duration
-          })
 
-          this.setState({ audioContextCreatedTime})
-        })
+          const source = currentSource
+          source.connect(analyser)
+          analyser.connect(gainNode)
+          gainNode.connect(audioContext.destination)
+          javascriptNode.connect(audioContext.destination)
+
+          source.start(offset, offset)
+
+          if (audioContext.state === 'suspended') {
+            audioContext.resume()
+          }
+
+          this.setState({ playing: true, isLoadingFullSong: false })
+
+          this.setState({ currentSource }, () => {
+            console.log('audio decoded and starting music from stream - full song loaded')
+            const offset = (audioContext.currentTime - audioLoadOffsetTime)
+            console.log({
+              offset,
+              duration: currentSource.buffer.duration
+            })
+
+            this.setState({ audioContextCreatedTime})
+          })
+        }
       }, function (error) {
         console.error(error)
       })
@@ -603,7 +610,7 @@ class Audio extends Component {
 
     if (currentSource) {
       currentSource.disconnect()
-      this.setState({ playing: false, musicIndex, playingFullMusic: false })
+      this.setState({ playing: false, musicIndex, playingFullMusic: false, canLoadFullSong: false })
     }
 
     this.loadSong(tracks[musicIndex])
@@ -1157,7 +1164,7 @@ class Audio extends Component {
         let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
 
         if (audioCurrentTime >= (currentSource.buffer.duration - 3.5) && !playingFullMusic) {
-          if (this.state.isLoadingFullSong) {
+          if (this.state.isLoadingFullSong || !this.state.canLoadFullSong) {
             return
           } else {
             this.setState({ playingFullMusic: true, isLoadingFullSong: true })
