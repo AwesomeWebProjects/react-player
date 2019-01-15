@@ -253,11 +253,9 @@ class Audio extends Component {
         framerFrequencyData: dataArray,
         javascriptNode,
         audioContextCreatedTime
+      }, () => {
+          this.loadSong(tracks[musicIndex])
       })
-
-      setTimeout(() => {
-        this.loadSong(tracks[musicIndex])
-      }, 200)
     } catch (error) {
       console.error(error)
       console.error('Web Audio API is not supported in this browser')
@@ -293,8 +291,7 @@ class Audio extends Component {
         const currentSource = audioContext.createBufferSource()
 
         currentSource.buffer = completeBuffer
-        this.setState({ currentSource })
-        setTimeout(() => {
+        this.setState({ currentSource }, () => {
           this.playSound()
           audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
 
@@ -308,7 +305,7 @@ class Audio extends Component {
             playingFullMusic: true,
             isLoadingSong: false
           })
-        }, 200)
+        })
       }, function (error) {
         console.error(error)
       })
@@ -662,11 +659,9 @@ class Audio extends Component {
     this.setState({
       canvas,
       canvasContext
-    })
-
-    setTimeout(() => {
+    }, () => {
       this.calculateSize()
-    }, 200)
+    })
   }
 
   calculateSize() {
