@@ -590,11 +590,8 @@ class Audio extends Component {
   }
 
   nextSong() {
-    let {
-      musicIndex,
-      tracks,
-      audioContext
-    } = this.state
+    const { firstPlay, audioContext } = this.state
+    let { musicIndex, tracks } = this.state
 
     if (musicIndex >= (tracks.length - 1)) {
       musicIndex = 0
@@ -602,16 +599,20 @@ class Audio extends Component {
       musicIndex = + 1
     }
 
-    audioContext.suspend()
-    this.switchSong(musicIndex)
+    if (firstPlay) {
+      this.setState({ isLoadingSong: true })
+      this.setState({ firstPlay: false, musicIndex }, () => {
+        this.init()
+      })
+    } else {
+      audioContext.suspend()
+      this.switchSong(musicIndex)
+    }
   }
 
   prevSong() {
-    let {
-      musicIndex,
-      tracks,
-      audioContext
-    } = this.state
+    const { firstPlay, audioContext } = this.state
+    let { musicIndex, tracks } = this.state
 
     if (musicIndex <= 0) {
       musicIndex = tracks.length - 1
@@ -619,8 +620,15 @@ class Audio extends Component {
       musicIndex = - 1
     }
 
-    audioContext.suspend()
-    this.switchSong(musicIndex)
+    if (firstPlay) {
+      this.setState({ isLoadingSong: true })
+      this.setState({ firstPlay: false, musicIndex }, () => {
+        this.init()
+      })
+    } else {
+      audioContext.suspend()
+      this.switchSong(musicIndex)
+    }
   }
 
   switchSong(musicIndex) {
