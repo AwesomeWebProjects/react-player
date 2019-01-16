@@ -41,6 +41,7 @@ class Audio extends Component {
       audioContextCreatedTime: 0,
       audioLoadOffsetTime: 0,
       audioCurrentTime: 0,
+      updatedVolume: false,
       isLoadingSong: false,
       isLoadingFullSong: false,
       canLoadFullSong: true,
@@ -446,7 +447,8 @@ class Audio extends Component {
       analyser,
       gainNode,
       javascriptNode,
-      currentSource
+      currentSource,
+      updatedVolume
     } = this.state
 
     const source = currentSource
@@ -455,8 +457,11 @@ class Audio extends Component {
     gainNode.connect(audioContext.destination)
     javascriptNode.connect(audioContext.destination)
 
-    // Reduce the volume.
-    gainNode.gain.value = 0.5
+    // Set the start volume to 50%.
+    console.log(gainNode)
+    if (gainNode && !updatedVolume) {
+      gainNode.gain.value = 0.5
+    }
 
     if (when && offset) {
       source.start(when, offset)
@@ -1255,7 +1260,7 @@ class Audio extends Component {
         break
     }
 
-    this.setState({ gainNode })
+    this.setState({ gainNode, updatedVolume: true })
   }
 
   getVolume() {
