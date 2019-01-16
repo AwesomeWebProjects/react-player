@@ -1,0 +1,27 @@
+.footer-nav {
+	position: absolute;
+	right: 2rem;
+	bottom: 0;
+	color: white;
+}
+
+.footer-nav ul {
+	list-style: none;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	padding: 0;
+}
+.footer-nav ul li {
+	padding: 0.5rem;
+	display: flex;
+	justify-content: center;
+	cursor: pointer;
+	transition: background-color 400ms ease-out;
+	border-radius: 50%;
+	margin: 0.6rem
+}
+.footer-nav ul li:hover {
+	background-color: rgba(255, 255, 255, 0.2);
+	border-radius: 50%;
+}
