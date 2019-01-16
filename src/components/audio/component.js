@@ -31,8 +31,16 @@ class Audio extends Component {
       bufferLength: null,
       duration: 0,
       tracks: [
-        rise,
-        fantastic,
+        {
+          name: 'Rise - League of Legends',
+          artist: 'Riot Games',
+          url: rise
+        },
+        {
+          name: 'Fantastic - Cinematic Sound',
+          artist: 'AudioJungle',
+          url: fantastic
+        },
       ],
       musicIndex: 0,
       playing: false,
@@ -159,6 +167,8 @@ class Audio extends Component {
     this.initTimeHandler = this.initTimeHandler.bind(this)
     this.preLoadCompleteSong = this.preLoadCompleteSong.bind(this)
     this.initEvents = this.initEvents.bind(this)
+    this.getSongName = this.getSongName.bind(this)
+    this.getSongArtist = this.getSongArtist.bind(this)
   }
 
   componentDidMount() {
@@ -255,7 +265,7 @@ class Audio extends Component {
         javascriptNode,
         audioContextCreatedTime
       }, () => {
-          this.loadSong(tracks[musicIndex])
+          this.loadSong(tracks[musicIndex].url)
       })
     } catch (error) {
       console.error(error)
@@ -648,7 +658,7 @@ class Audio extends Component {
       this.setState({ playing: false, musicIndex, playingFullMusic: false, canLoadFullSong: false })
     }
 
-    this.loadSong(tracks[musicIndex])
+    this.loadSong(tracks[musicIndex].url)
   }
 
   canvasConfigure() {
@@ -1269,6 +1279,19 @@ class Audio extends Component {
     return gainNode.gain.value
   }
 
+  getSongName() {
+    const { tracks, musicIndex } = this.state
+    if (tracks[musicIndex]) {
+      return tracks[musicIndex].name || 'No Music Name Found'
+    }
+  }
+  getSongArtist() {
+    const { tracks, musicIndex } = this.state
+    if (tracks[musicIndex]) {
+      return tracks[musicIndex].artist || 'No Music Artist Found'
+    }
+  }
+
   /**
    * React Render
    */
@@ -1278,8 +1301,8 @@ class Audio extends Component {
           <div className="Player">
             <canvas id="Player-canvas" key="Player-canvas"></canvas>
             <div className="song-info">
-              <div className="song-artist">Riot Games</div>
-              <div className="song-name">Rise - League of Legends</div>
+              <div className="song-artist">{this.getSongArtist()}</div>
+              <div className="song-name">{this.getSongName()}</div>
             </div>
             <div className="controls">
               <div className="prev-song">
