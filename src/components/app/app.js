@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-// import HelloWorld from '../hello-world/component';
 import Audio from '../audio/component';
 import github from '../../assets/github/GitHub-Mark-Light-32px.png'
 
 class App extends Component {
   render() {
-    // return [<HelloWorld />, <Audio />]
     return [
       <Audio key='audio-component' />,
       <div key='github-logo'>
