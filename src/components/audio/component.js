@@ -335,17 +335,6 @@ class Audio extends Component {
         throw Error('Content-Length response header unavailable')
       }
 
-      // Save the music with SW for further requests
-      // caches.open('mysite-dynamic').then((cache) => {
-      //   console.log('sw response:', response)
-      //   return cache.match(response).then((response) => {
-      //     return response || fetch(response).then((response) => {
-      //       cache.put(response, response.clone())
-      //       return response
-      //     })
-      //   })
-      // })
-
       this.setState({ audioStreamData: { response: response.clone(), contentLength: response.headers.get('content-length')} })
 
       const stream = this.readAudioStream(response, contentLength, { all: false, sec: 3, amount: 1245184 })
@@ -458,7 +447,6 @@ class Audio extends Component {
     javascriptNode.connect(audioContext.destination)
 
     // Set the start volume to 50%.
-    console.log(gainNode)
     if (gainNode && !updatedVolume) {
       gainNode.gain.value = 0.5
     }
