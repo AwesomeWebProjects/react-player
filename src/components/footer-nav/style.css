@@ -32,12 +32,25 @@
 
 .popup-shortcut {
 	position: absolute;
-	bottom: 0;
-	right: 5rem;
+	bottom: -0.75rem;
+	right: 3rem;
 	background-color: rgba(255, 255, 255, 0.2);
 	width: 20rem;
 	cursor: default;
 }
+
+.popup-shortcut::after {
+	position: absolute;
+	content: '';
+	width: 0;
+	height: 0;
+	right: -10px;
+	bottom: 10px;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+	border-left: 10px solid rgba(255, 255, 255, 0.23);
+}
+
 .popup-shortcut ul {
 	list-style: none;
 }
