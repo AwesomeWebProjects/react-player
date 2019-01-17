@@ -615,7 +615,10 @@ class Audio extends Component {
   }
 
   nextSong() {
-    const { firstPlay, audioContext } = this.state
+    const {
+      firstPlay,
+      audioContext
+    } = this.state
     let { musicIndex, tracks } = this.state
 
     if (musicIndex >= (tracks.length - 1)) {
@@ -623,6 +626,8 @@ class Audio extends Component {
     } else {
       musicIndex += 1
     }
+
+    console.log({musicIndex})
 
     if (firstPlay) {
       this.setState({ isLoadingSong: true })
@@ -1217,7 +1222,9 @@ class Audio extends Component {
       audioLoadOffsetTime,
       currentSource,
       playingFullMusic,
-      hasStreamSupport
+      hasStreamSupport,
+      isLoadingFullSong,
+      canLoadFullSong
     } = this.state
 
     let {
@@ -1234,7 +1241,7 @@ class Audio extends Component {
         const currentDuration = currentSource.buffer.duration
 
         if (audioCurrentTime >= (currentDuration - 3.5) && !playingFullMusic && hasStreamSupport) {
-          if (this.state.isLoadingFullSong || !this.state.canLoadFullSong) {
+          if (isLoadingFullSong || !canLoadFullSong) {
             return
           } else {
             this.setState({ isLoadingFullSong: true })
