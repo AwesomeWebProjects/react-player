@@ -201,7 +201,7 @@ class Audio extends Component {
   }
 
   initEvents() {
-    document.addEventListener("keydown", (event) => {
+    document.addEventListener('keydown', (event) => {
       const { audioContext } = this.state
       const key = event.which
 
@@ -242,7 +242,7 @@ class Audio extends Component {
       }
     })
 
-    document.addEventListener("fullSongLoaded", () => {
+    document.addEventListener('fullSongLoaded', () => {
       this.setState({ playingFullMusic: true })
     })
   }
@@ -1312,31 +1312,31 @@ class Audio extends Component {
    */
   render() {
     return (
-      <div className="Audio">
-          <div className="Player">
-            <canvas id="Player-canvas" key="Player-canvas"></canvas>
-            <div className="song-info">
-              <div className="song-artist">{this.getSongArtist()}</div>
-              <div className="song-name">{this.getSongName()}</div>
+      <div className='Audio'>
+          <div className='Player'>
+            <canvas id='Player-canvas' key='Player-canvas'></canvas>
+            <div className='song-info'>
+              <div className='song-artist'>{this.getSongArtist()}</div>
+              <div className='song-name'>{this.getSongName()}</div>
             </div>
-            <div className="controls">
-              <div className="prev-song">
+            <div className='controls'>
+              <div className='prev-song'>
                 <FastRewind style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.prevSong} />
               </div>
-              <div className="pause-play-song">
+              <div className='pause-play-song'>
               { this.state.isLoadingSong
-                ? <div className="loader"><div></div><div></div></div>
+                ? <div className='loader'><div></div><div></div></div>
                 : !this.state.playing
                     ? <PlayArrow style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.resumeSong} />
                     : <Pause style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.suspendSong} />
                 }
               </div>
-              <div className="next-song">
+              <div className='next-song'>
                 <FastForward style={{ fontSize: '72px', color: 'rgba(97, 218, 251, 0.8)', margin: '1rem', cursor: 'pointer' }} onClick={this.nextSong} />
               </div>
             </div>
-            <div className="song-footer">
-              <div className="song-gain">{
+            <div className='song-footer'>
+              <div className='song-gain'>{
                 this.getVolume() === 0
                   ? <VolumeMute style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
                   : this.getVolume() < 1
@@ -1344,7 +1344,7 @@ class Audio extends Component {
                     : <VolumeUp style={{ cursor: 'pointer' }} onClick={this.changeVolume} />
                 }
               </div>
-            <div className="song-duration">{this.state.timeControl.textContent}</div>
+            <div className='song-duration'>{this.state.timeControl.textContent}</div>
             </div>
           </div>
       </div>
