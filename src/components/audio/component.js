@@ -1,7 +1,9 @@
 import React, { Component } from 'react'
 import './style.css'
-import rise from '../../assets/rise.mp3'
-import fantastic from '../../assets/fantastic.mp3'
+import rise from '../../assets/music/rise.mp3'
+import fantastic from '../../assets/music/fantastic.mp3'
+import legendsNeverDie from '../../assets/music/legends-never-die.mp3'
+import shortLegendsNeverDie from '../../assets/music/short-legends-never-die.mp3'
 
 import {
   PlayArrow,
@@ -31,6 +33,16 @@ class Audio extends Component {
       bufferLength: null,
       duration: 0,
       tracks: [
+        {
+          name: 'Short LND - League of Legends',
+          artist: 'Riot Games',
+          url: shortLegendsNeverDie
+        },
+        {
+          name: 'LND - League of Legends',
+          artist: 'Riot Games',
+          url: legendsNeverDie
+        },
         {
           name: 'Rise - League of Legends',
           artist: 'Riot Games',
@@ -229,6 +241,10 @@ class Audio extends Component {
           break
       }
     })
+
+    document.addEventListener("fullSongLoaded", () => {
+      this.setState({ playingFullMusic: true })
+    })
   }
 
   init() {
@@ -419,6 +435,7 @@ class Audio extends Component {
             }
             if (done) {
               console.log(`Close stream done`)
+              document.dispatchEvent(new CustomEvent('fullSongLoaded'))
               reader.releaseLock()
               controller.close()
               return
@@ -491,8 +508,6 @@ class Audio extends Component {
       return response.arrayBuffer()
     }).then(responseBuffer => {
       audioContext.decodeAudioData(responseBuffer, (buffer) => {
-        this.setState({  playingFullMusic: true })
-
         const currentSource = audioContext.createBufferSource()
         currentSource.buffer = buffer
 
