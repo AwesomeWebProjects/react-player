@@ -31,7 +31,6 @@ class footerNav extends Component {
 
 
 		document.querySelector('body').onclick = () => {
-			console.log('close')
 			if (this.state.shortcutPopupActive) {
 				document.dispatchEvent(new CustomEvent('closePopupShortcut'))
 			}
@@ -64,7 +63,7 @@ class footerNav extends Component {
 						<Keyboard style={{ fontSize: '32px' }} onClick={this.switchShortcutPopupActive}  />
 						{shortcutPopup}
 					</li>
-					<li>
+					<li style={{ borderRadius: '12%' }}>
 						<div key='github-logo' data-for='githubTooltip' data-tip>
 							<a href='https://github.com/danielbarion/react-player' target='_alt'>
 								<img src={github} alt='GitHub' width='32' height='32'></img>
