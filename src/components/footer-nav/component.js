@@ -11,7 +11,31 @@ class footerNav extends Component {
 			this.state = {
 				shortcutPopupActive: false
 			}
+
 		this.switchShortcutPopupActive = this.switchShortcutPopupActive.bind(this)
+		this.initEvents = this.initEvents.bind(this)
+	}
+
+	componentDidMount() {
+		this.initEvents()
+	}
+
+	componentWillUnmount() {
+		document.removeEventListener('closePopupShortcut')
+	}
+
+	initEvents() {
+		document.addEventListener('closePopupShortcut', () => {
+			this.switchShortcutPopupActive()
+		})
+
+
+		document.querySelector('body').onclick = () => {
+			console.log('close')
+			if (this.state.shortcutPopupActive) {
+				document.dispatchEvent(new CustomEvent('closePopupShortcut'))
+			}
+		}
 	}
 
 	switchShortcutPopupActive() {
