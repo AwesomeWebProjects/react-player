@@ -9,34 +9,36 @@ class footerNav extends Component {
 	constructor(props) {
 		super(props)
 			this.state = {
-				actionIcons: [
-					{ name: 'shortcut', active: false }
-				]
+				shortcutPopupActive: false
 			}
+		this.switchShortcutPopupActive = this.switchShortcutPopupActive.bind(this)
 	}
 
-	switchActive(event) {
-		const element = event.currentTarget
-		element.className = 'active'
-		console.log(element)
+	switchShortcutPopupActive() {
+		this.setState({ shortcutPopupActive: !this.state.shortcutPopupActive})
 	}
 
 	/**
 	* React Render
 	*/
 	render() {
+
+		const shortcutPopup = this.state.shortcutPopupActive ? (
+			<div className='popup-shortcut card card-4'>
+				<ul>
+					<li><span>SpaceBar</span> Pause or resume song</li>
+					<li><span>N</span> Go to the next song</li>
+					<li><span>B</span> Back to the previous song</li>
+				</ul>
+			</div>
+			) : null
+
 		return (
 			<div className='footer-nav'>
 				<ul>
-					<li onClick={this.switchActive}>
+					<li onClick={this.switchShortcutPopupActive} className={this.state.shortcutPopupActive ? 'active' : null}>
 						<Keyboard	style={{ fontSize: '32px' }} />
-						<div className='popup-shortcut'>
-							<ul>
-								<li><span>SpaceBar</span> Pause or resume song</li>
-								<li><span>N</span> Go to the next song</li>
-								<li><span>B</span> Back to the previous song</li>
-							</ul>
-						</div>
+						{shortcutPopup}
 					</li>
 					<li>
 						<div key='github-logo' data-for='githubTooltip' data-tip>
