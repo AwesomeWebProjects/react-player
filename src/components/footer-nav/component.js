@@ -24,7 +24,7 @@ class footerNav extends Component {
 	render() {
 
 		const shortcutPopup = this.state.shortcutPopupActive ? (
-			<div className='popup-shortcut card card-4'>
+			<div className='popup-shortcut card card-3'>
 				<ul>
 					<li><span>SpaceBar</span> Pause or resume song</li>
 					<li><span>N</span> Go to the next song</li>
@@ -36,8 +36,8 @@ class footerNav extends Component {
 		return (
 			<div className='footer-nav'>
 				<ul>
-					<li onClick={this.switchShortcutPopupActive} className={this.state.shortcutPopupActive ? 'active' : null}>
-						<Keyboard	style={{ fontSize: '32px' }} />
+					<li className={this.state.shortcutPopupActive ? 'active' : null}>
+						<Keyboard style={{ fontSize: '32px' }} onClick={this.switchShortcutPopupActive}  />
 						{shortcutPopup}
 					</li>
 					<li>
