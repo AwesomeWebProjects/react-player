@@ -34,18 +34,18 @@ class Audio extends Component {
       duration: 0,
       tracks: [
         {
-          name: 'Short LND - League of Legends',
-          artist: 'Riot Games',
+          name: 'Small Piece of music LND',
+          artist: 'League of Legends',
           url: shortLegendsNeverDie
         },
         {
-          name: 'LND - League of Legends',
-          artist: 'Riot Games',
+          name: 'Legends Never Die',
+          artist: 'League of Legends',
           url: legendsNeverDie
         },
         {
-          name: 'Rise - League of Legends',
-          artist: 'Riot Games',
+          name: 'Rise',
+          artist: 'League of Legends',
           url: rise
         },
         {
@@ -621,7 +621,7 @@ class Audio extends Component {
     if (musicIndex >= (tracks.length - 1)) {
       musicIndex = 0
     } else {
-      musicIndex = + 1
+      musicIndex += 1
     }
 
     if (firstPlay) {
@@ -642,7 +642,7 @@ class Audio extends Component {
     if (musicIndex <= 0) {
       musicIndex = tracks.length - 1
     } else {
-      musicIndex = - 1
+      musicIndex -= 1
     }
 
     if (firstPlay) {
@@ -1240,7 +1240,7 @@ class Audio extends Component {
           }
         }
 
-        console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)
+        // console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)
         if (playingFullMusic && audioCurrentTime >= (currentDuration - 1.5)) {
           this.nextSong()
         }
