@@ -791,10 +791,12 @@ class Audio extends Component {
       trackerR,
       trackerAngle,
       sceneRadius,
-      scenePadding
+      scenePadding,
+      trackerEnabled,
+      hasStreamSupport
     } = this.state
 
-    if (this.state.trackerEnabled) {
+    if (trackerEnabled || !hasStreamSupport) {
       canvasContext.save()
       canvasContext.beginPath()
       canvasContext.fillStyle = 'rgba(97, 218, 251, 0.85)'
