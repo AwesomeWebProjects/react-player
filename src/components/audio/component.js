@@ -176,7 +176,7 @@ class Audio extends Component {
     // @Miscs
     this.changeVolume = this.changeVolume.bind(this)
     this.getVolume = this.getVolume.bind(this)
-    this.initTimeHandler = this.initTimeHandler.bind(this)
+    this.timeHandler = this.timeHandler.bind(this)
     this.preLoadCompleteSong = this.preLoadCompleteSong.bind(this)
     this.initEvents = this.initEvents.bind(this)
     this.getSongName = this.getSongName.bind(this)
@@ -670,6 +670,8 @@ class Audio extends Component {
 
     const { isLoadingSong } = this.state
 
+    this.timeHandler()
+
     if (!isLoadingSong) {
       this.setState({ isLoadingSong: true })
     }
@@ -746,13 +748,12 @@ class Audio extends Component {
 
     this.framerInit()
     this.trackerInit()
-    this.initTimeHandler()
+    this.timeHandler()
 
     this.startSceneRender()
 
     setInterval(() => {
-      console.log('songContextHandler')
-      this.initTimeHandler()
+      this.timeHandler()
       this.songContextHandler()
     }, 300)
   }
@@ -1222,7 +1223,7 @@ class Audio extends Component {
       Math.abs(event.pageY - canvasCy - canvasCoord.top) > sceneRadius
   }
 
-  initTimeHandler() {
+  timeHandler() {
     const {
       audioContext,
       audioLoadOffsetTime,
@@ -1233,29 +1234,27 @@ class Audio extends Component {
       timeControl
     } = this.state
 
-    setTimeout(() => {
-      let rawTime = 0
+    let rawTime = 0
 
-      if (audioContext && audioContext.state !== 'suspended' && currentSource) {
-        // When start time of the track from the middle for example, need add a startTime (offset) into calc
-        // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
-        let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
+    if (audioContext && audioContext.state !== 'suspended' && currentSource) {
+      // When start time of the track from the middle for example, need add a startTime (offset) into calc
+      // let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime - startTime
+      let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
 
-        rawTime = parseInt(audioCurrentTime || 0)
+      rawTime = parseInt(audioCurrentTime || 0)
 
-        const secondsInMin = 60
-        let min = parseInt(rawTime / secondsInMin)
-        let seconds = rawTime - min * secondsInMin
-        if (min < 10) {
-          min = `0${min}`
-        }
-        if (seconds < 10) {
-          seconds = `0${seconds}`
-        }
-        const time = `${min}:${seconds}`
-        timeControl.textContent = time
+      const secondsInMin = 60
+      let min = parseInt(rawTime / secondsInMin)
+      let seconds = rawTime - min * secondsInMin
+      if (min < 10) {
+        min = `0${min}`
       }
-    }, 600)
+      if (seconds < 10) {
+        seconds = `0${seconds}`
+      }
+      const time = `${min}:${seconds}`
+      timeControl.textContent = time
+    }
   }
 
   songContextHandler() {
@@ -1276,13 +1275,11 @@ class Audio extends Component {
       if (audioCurrentTime >= (currentDuration - 3.5) && !playingFullMusic && hasStreamSupport && !isLoadingFullSong && canLoadFullSong) {
         this.setState({ isLoadingFullSong: true })
         this.preLoadCompleteSong()
-      }
-
-      // console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)
-      if (playingFullMusic && audioCurrentTime >= (currentDuration - 1.5)) {
-        this.setState({ test: true }, () => {
+      } else {
+        // console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)
+        if (playingFullMusic && audioCurrentTime >= (currentDuration - 1.5) && !isLoadingFullSong ) {
           this.nextSong()
-        })
+        }
       }
     }
   }
