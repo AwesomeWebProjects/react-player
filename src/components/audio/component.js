@@ -136,7 +136,6 @@ class Audio extends Component {
     // @Player
     this.init = this.init.bind(this)
     this.loadSong = this.loadSong.bind(this)
-    this.loadFromStream = this.loadFromStream.bind(this)
     this.playSound = this.playSound.bind(this)
     this.startPlayer = this.startPlayer.bind(this)
     this.suspendSong = this.suspendSong.bind(this)
@@ -490,49 +489,6 @@ class Audio extends Component {
     }
 
     this.setState({ playing: true })
-  }
-
-  loadFromStream() {
-    let {
-      audioStreamData,
-      audioContext,
-      audioLoadOffsetTime,
-      audioContextCreatedTime
-    } = this.state
-
-    new Promise((resolve) => {
-      this.setState({ audioStreamData: { response: audioStreamData.response.clone(), contentLength: audioStreamData.response.headers.get('content-length') } })
-
-      const stream = this.readAudioStream(audioStreamData.response, audioStreamData.contentLength, { all: true, sec: 1 })
-      resolve(new Response(stream))
-    }).then(response => {
-      return response.arrayBuffer()
-    }).then(responseBuffer => {
-      audioContext.decodeAudioData(responseBuffer, (buffer) => {
-        const currentSource = audioContext.createBufferSource()
-        currentSource.buffer = buffer
-
-        this.setState({ currentSource }, () => {
-          console.log('audio decoded and starting music from stream')
-          this.playSound()
-
-          audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
-
-          if (audioLoadOffsetTime > audioContext.currentTime) {
-            audioLoadOffsetTime = audioContext.currentTime
-          }
-
-          this.setState({
-            audioContextCreatedTime,
-            audioLoadOffsetTime,
-            isLoadingSong: false,
-            canLoadFullSong: true
-          })
-        })
-      }, function (error) {
-        console.error(error)
-      })
-    })
   }
 
   preLoadCompleteSong() {
