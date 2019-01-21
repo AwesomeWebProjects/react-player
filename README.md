@@ -2,9 +2,14 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 And based on https://codepen.io/alexdevp/full/RNELPV - Alex Permyakov
 
-## Changes
+## About the Project
+A web player build with react and web audio api.
 
-Audio processing was written from zero while layout code was based and refactored based in pen of `Alex Permyakov`;
+The layout was inspired by `Alex Permyakov` example in codepen and the audio processing was write from zero.
+
+The player loads the song with `web streams` to give a better experience to user and improve performance;
+
+The project is open source and can be used as example of "web audio api and canvas visualization
 
 ## Project Available Scripts
 
