@@ -9,7 +9,7 @@ The layout was inspired by `Alex Permyakov` example in codepen and the audio pro
 
 The player loads the song with `web streams` to give a better experience to user and improve performance;
 
-The project is open source and can be used as example of "web audio api and canvas visualization
+The project is open source and can be used as example of `web audio api and canvas visualization`.
 
 ## Project Available Scripts
 
