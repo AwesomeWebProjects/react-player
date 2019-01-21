@@ -1,3 +1,5 @@
+![Web Player](https://i.imgur.com/ApMUQE9.png)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 And based on https://codepen.io/alexdevp/full/RNELPV - Alex Permyakov
