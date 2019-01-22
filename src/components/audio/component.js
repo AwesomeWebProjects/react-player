@@ -407,8 +407,7 @@ class Audio extends Component {
     const stream = new ReadableStream({
       start(controller) {
         const reader = response.body.getReader()
-        read()
-        function read() {
+        const read = () => {
           reader.read().then(({ done, value }) => {
 
             if (!params.all) {
@@ -451,6 +450,8 @@ class Audio extends Component {
             controller.error(error)
           })
         }
+
+        read()
       }
     })
 
