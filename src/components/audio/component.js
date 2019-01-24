@@ -4,6 +4,7 @@ import rise from '../../assets/music/rise.mp3'
 import fantastic from '../../assets/music/fantastic.mp3'
 import legendsNeverDie from '../../assets/music/legends-never-die.mp3'
 import shortLegendsNeverDie from '../../assets/music/short-legends-never-die.mp3'
+import audioWorkerJS from './audio-worker.js'
 
 import {
   PlayArrow,
@@ -18,6 +19,12 @@ import {
 class Audio extends Component {
   constructor(props) {
     super(props)
+
+    /**
+     * worker
+     */
+    this.audioWorker = new Worker(audioWorkerJS)
+    this.audioWorker.onmessage = (data) => this.handleWorkerCallback(data)
 
     /**
      * state
@@ -181,6 +188,7 @@ class Audio extends Component {
     this.getSongName = this.getSongName.bind(this)
     this.getSongArtist = this.getSongArtist.bind(this)
     this.songContextHandler = this.songContextHandler.bind(this)
+    this.handleWorkerCallback = this.handleWorkerCallback.bind(this)
   }
 
   componentDidMount() {
@@ -189,6 +197,11 @@ class Audio extends Component {
     setTimeout(() => {
       this.showPlayer()
     }, 200)
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('fullSongLoaded')
+    this.audioWorker.terminate()
   }
 
   showPlayer() {
@@ -247,6 +260,10 @@ class Audio extends Component {
     })
   }
 
+  handleWorkerCallback(data) {
+    console.log('call back data: ', data)
+  }
+
   init() {
     try {
       const { tracks, musicIndex } = this.state
@@ -291,6 +308,8 @@ class Audio extends Component {
 
   loadSong(url) {
     const { hasStreamSupport } = this.state
+
+    this.audioWorker.postMessage({ type: 'audio', data: 'hye hye' })
 
     if (hasStreamSupport) {
       console.log('fetch and stream')
