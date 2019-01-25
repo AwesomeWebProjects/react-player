@@ -4,7 +4,6 @@ import rise from '../../assets/music/rise.mp3'
 import fantastic from '../../assets/music/fantastic.mp3'
 import legendsNeverDie from '../../assets/music/legends-never-die.mp3'
 import shortLegendsNeverDie from '../../assets/music/short-legends-never-die.mp3'
-import audioWorkerJS from './audio-worker.js'
 
 import {
   PlayArrow,
@@ -23,7 +22,7 @@ class Audio extends Component {
     /**
      * worker
      */
-    this.audioWorker = new Worker(audioWorkerJS)
+    this.audioWorker = new Worker('./audio-worker.js')
     this.audioWorker.onmessage = (data) => this.handleWorkerCallback(data)
 
     /**
