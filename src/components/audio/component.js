@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import './style.css'
+import './style.styl'
 import rise from '../../assets/music/rise.mp3'
 import fantastic from '../../assets/music/fantastic.mp3'
 import legendsNeverDie from '../../assets/music/legends-never-die.mp3'
