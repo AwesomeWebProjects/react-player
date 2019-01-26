@@ -309,8 +309,6 @@ class Audio extends Component {
   loadSong(url) {
     const { hasStreamSupport } = this.state
 
-    this.audioWorker.postMessage({ type: 'audio', data: 'hye hye' })
-
     if (hasStreamSupport) {
       console.log('fetch and stream')
       this.audioStream(url)
