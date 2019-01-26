@@ -200,7 +200,6 @@ class Audio extends Component {
   }
 
   componentWillUnmount() {
-    document.removeEventListener('fullSongLoaded')
     this.audioWorker.terminate()
   }
 
@@ -253,10 +252,6 @@ class Audio extends Component {
         default:
           break
       }
-    })
-
-    document.addEventListener('fullSongLoaded', () => {
-      this.setState({ playingFullMusic: true })
     })
   }
 
@@ -420,6 +415,7 @@ class Audio extends Component {
     const total = parseInt(contentLength, 10)
     let loaded = 0
     const startedStream = new Date()
+    const that = this
 
     const stream = new ReadableStream({
       start(controller) {
@@ -451,7 +447,7 @@ class Audio extends Component {
             }
             if (done) {
               console.log(`Close stream done`)
-              document.dispatchEvent(new CustomEvent('fullSongLoaded'))
+              that.setState({ playingFullMusic: true })
               reader.releaseLock()
               controller.close()
               return
