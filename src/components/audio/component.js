@@ -87,6 +87,7 @@ class Audio extends Component {
       canvasCx: null,
       canvasCy: null,
       canvasCoord: null,
+      firstDraw: true,
 
       /**
        * Framer Context
@@ -744,9 +745,17 @@ class Audio extends Component {
   }
 
   sceneRender() {
-    requestAnimationFrame(() => {
+    if (this.state.firstDraw) {
       this.sceneClear()
       this.sceneDraw()
+      this.setState({ firstDraw: false })
+    }
+
+    requestAnimationFrame(() => {
+      if (this.state.playing) {
+        this.sceneClear()
+        this.sceneDraw()
+      }
       if (this.state.sceneInProcess) {
         this.sceneRender()
       }
