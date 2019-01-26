@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
-import './style.css'
+import './style.styl'
 import github from '../../assets/github/GitHub-Mark-Light-32px.png'
 import {
   Keyboard
 } from '@material-ui/icons'
 
-class footerNav extends Component {
+class appFooterNav extends Component {
 	constructor(props) {
 		super(props)
 			this.state = {
@@ -91,4 +91,4 @@ class footerNav extends Component {
 	}
 }
 
-export default footerNav
+export default appFooterNav
