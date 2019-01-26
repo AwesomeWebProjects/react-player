@@ -4,6 +4,7 @@ import rise from '../../assets/music/rise.mp3'
 import fantastic from '../../assets/music/fantastic.mp3'
 import legendsNeverDie from '../../assets/music/legends-never-die.mp3'
 import shortLegendsNeverDie from '../../assets/music/short-legends-never-die.mp3'
+import audioWorkerJS from './audio.worker.js'
 
 import {
   PlayArrow,
@@ -18,6 +19,12 @@ import {
 class Audio extends Component {
   constructor(props) {
     super(props)
+
+    /**
+     * worker
+     */
+    this.audioWorker = audioWorkerJS()
+    this.audioWorker.onmessage = (data) => this.handleWorkerCallback(data)
 
     /**
      * state
@@ -181,6 +188,7 @@ class Audio extends Component {
     this.getSongName = this.getSongName.bind(this)
     this.getSongArtist = this.getSongArtist.bind(this)
     this.songContextHandler = this.songContextHandler.bind(this)
+    this.handleWorkerCallback = this.handleWorkerCallback.bind(this)
   }
 
   componentDidMount() {
@@ -189,6 +197,10 @@ class Audio extends Component {
     setTimeout(() => {
       this.showPlayer()
     }, 200)
+  }
+
+  componentWillUnmount() {
+    this.audioWorker.terminate()
   }
 
   showPlayer() {
@@ -241,10 +253,10 @@ class Audio extends Component {
           break
       }
     })
+  }
 
-    document.addEventListener('fullSongLoaded', () => {
-      this.setState({ playingFullMusic: true })
-    })
+  handleWorkerCallback(data) {
+    console.log('call back data: ', data)
   }
 
   init() {
@@ -291,6 +303,8 @@ class Audio extends Component {
 
   loadSong(url) {
     const { hasStreamSupport } = this.state
+
+    this.audioWorker.postMessage({ type: 'audio', data: 'lorem ipsum' })
 
     if (hasStreamSupport) {
       console.log('fetch and stream')
@@ -403,6 +417,7 @@ class Audio extends Component {
     const total = parseInt(contentLength, 10)
     let loaded = 0
     const startedStream = new Date()
+    const that = this
 
     const stream = new ReadableStream({
       start(controller) {
@@ -434,7 +449,7 @@ class Audio extends Component {
             }
             if (done) {
               console.log(`Close stream done`)
-              document.dispatchEvent(new CustomEvent('fullSongLoaded'))
+              that.setState({ playingFullMusic: true })
               reader.releaseLock()
               controller.close()
               return

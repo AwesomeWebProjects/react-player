@@ -30,9 +30,24 @@ class footerNav extends Component {
 		})
 
 
-		document.querySelector('body').onclick = () => {
+		document.querySelector('body').onclick = (event) => {
 			if (this.state.shortcutPopupActive) {
-				document.dispatchEvent(new CustomEvent('closePopupShortcut'))
+				const path = event.path
+
+				const isClickInPopup = path.filter(element => {
+					let result = false
+
+					if (!!element.className && element.tagName !== 'svg' && element.tagName !== 'path') {
+						const elementClass = element.className.split(' ')
+						result = elementClass.filter(item => item === 'footer-popup-icon' || item === 'footer-popup-content').length > 0
+					}
+
+					return result
+				}).length > 0
+
+				if (!isClickInPopup) {
+					document.dispatchEvent(new CustomEvent('closePopupShortcut'))
+				}
 			}
 		}
 	}
@@ -48,7 +63,7 @@ class footerNav extends Component {
 
 		const shortcutPopup = this.state.shortcutPopupActive ? (
 			<div className='popup-shortcut card card-3'>
-				<ul>
+				<ul className='footer-popup-content'>
 					<li><span>SpaceBar</span> Pause or resume song</li>
 					<li><span>N</span> Go to the next song</li>
 					<li><span>B</span> Back to the previous song</li>
@@ -59,8 +74,8 @@ class footerNav extends Component {
 		return (
 			<div className='footer-nav'>
 				<ul>
-					<li className={this.state.shortcutPopupActive ? 'active' : null}>
-						<Keyboard style={{ fontSize: '32px' }} onClick={this.switchShortcutPopupActive}  />
+					<li className={this.state.shortcutPopupActive ? 'footer-popup-icon active' : null}>
+						<Keyboard style={{ fontSize: '32px' }} onClick={this.switchShortcutPopupActive} />
 						{shortcutPopup}
 					</li>
 					<li style={{ borderRadius: '12%' }}>
