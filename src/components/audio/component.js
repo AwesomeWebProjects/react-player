@@ -87,7 +87,8 @@ class Audio extends Component {
       canvasCx: null,
       canvasCy: null,
       canvasCoord: null,
-      firstDraw: true,
+      canvasFirstDraw: true,
+      canvasResized: false,
 
       /**
        * Framer Context
@@ -736,6 +737,8 @@ class Audio extends Component {
       this.canvasConfigure()
       this.framerInit()
       this.sceneRender()
+
+      this.setState({ canvasResized: true })
     }
   }
 
@@ -745,10 +748,10 @@ class Audio extends Component {
   }
 
   sceneRender() {
-    if (this.state.firstDraw) {
+    if (this.state.canvasFirstDraw || this.state.canvasResized) {
       this.sceneClear()
       this.sceneDraw()
-      this.setState({ firstDraw: false })
+      this.setState({ canvasFirstDraw: false, canvasResized: false })
     }
 
     requestAnimationFrame(() => {
