@@ -1,6 +1,8 @@
 {
-  "name": "my-app",
-  "version": "0.1.1",
+  "name": "audio-player",
+  "version": "0.1.2",
+  "author": "Daniel Barion // @danielbarion (github)",
+  "license": "MIT",
   "private": true,
   "dependencies": {
     "@babel/core": "7.1.6",
