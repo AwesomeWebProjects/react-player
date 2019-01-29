@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "audio-player",
   "version": "0.1.1",
   "private": true,
   "dependencies": {
