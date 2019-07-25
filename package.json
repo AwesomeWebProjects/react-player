@@ -2,6 +2,7 @@
   "name": "audio-player",
   "version": "0.1.2",
   "author": "Daniel Barion // @danielbarion (github)",
+  "main": "src/index.js",
   "license": "MIT",
   "private": false,
   "devDependencies": {
