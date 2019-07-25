@@ -1269,7 +1269,12 @@ class Audio extends Component {
 
   changeVolume() {
     let { gainNode } = this.state
-    switch (this.state.gainNode.gain.value) {
+
+    if (gainNode == null) {
+      return
+    }
+
+    switch (gainNode.gain.value) {
       case 0:
           gainNode.gain.value = 0.5
         break
