@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import './style.styl'
 import github from '../../assets/github/GitHub-Mark-Light-32px.png'
 import {
   Keyboard

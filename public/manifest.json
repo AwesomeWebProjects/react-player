@@ -3,24 +3,9 @@
   "name": "Create React App Sample",
   "icons": [
     {
-      "src": "16x16_radius.png",
-      "type": "image/png",
-      "sizes": "16x16"
-    },
-    {
-      "src": "24x24_radius.png",
-      "type": "image/png",
-      "sizes": "24x24"
-    },
-    {
-      "src": "32x32_radius.png",
-      "type": "image/png",
-      "sizes": "32x32"
-    },
-    {
-      "src": "64x64_radius.png",
-      "type": "image/png",
-      "sizes": "64x64"
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
     }
   ],
   "start_url": ".",
