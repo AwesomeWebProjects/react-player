@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import 'assets/css/base.styl'
 import App from 'modules/app'
-import AudioPlayer from 'components/audio'
 import { BrowserRouter, Switch, Route } from 'react-router-dom'
 import MyAppContext from 'context/app-context'
 import * as serviceWorker from './serviceWorker'
@@ -23,5 +22,3 @@ ReactDOM.render(
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister()
-
-export { AudioPlayer }
