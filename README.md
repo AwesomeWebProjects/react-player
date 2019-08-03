@@ -1,3 +1,14 @@
+
+----
+
+<p align="center">
+  <img id="awesome-audio-visualization" src="https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true" alt="Logo AAV">
+</p>
+
+This project are listed on [Awesome Audio Visualization - WillianJusten](https://github.com/willianjusten/awesome-audio-visualization)
+
+----
+
 ![Web Player](https://i.imgur.com/ApMUQE9.png)
 
 [Demo](https://dazzling-jang-471a34.netlify.com/)
@@ -14,16 +25,6 @@ The layout was inspired by `Alex Permyakov` example in codepen and the audio pro
 The player loads the song with `web streams` to give a better experience to user and improve performance;
 
 The project is open source and can be used as example of `web audio api and canvas visualization`.
-
-----
-
-This project are listed on [Awesome Audio Visualization - WillianJusten](https://github.com/willianjusten/awesome-audio-visualization)
-
-<p align="center">
-  <img id="awesome-audio-visualization" src="https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true" alt="Logo AAV">
-</p>
-
-----
 
 ## Available Scripts
 
