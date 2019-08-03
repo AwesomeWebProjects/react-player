@@ -1,6 +1,3 @@
-
-----
-
 <p align="center">
   <img id="awesome-audio-visualization" src="https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true" alt="Logo AAV">
 </p>
