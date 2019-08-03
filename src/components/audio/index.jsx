@@ -454,7 +454,7 @@ class Audio extends Component {
             }
 
             loaded += value.byteLength
-            console.log({ loaded, total }, (new Date() - startedStream) / 1000)
+            console.log({ loaded, total, percent: `${((loaded * 100) / total).toFixed(2)}%` }, (new Date() - startedStream) / 1000)
             controller.enqueue(value)
 
             read()
