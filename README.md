@@ -15,6 +15,16 @@ The player loads the song with `web streams` to give a better experience to user
 
 The project is open source and can be used as example of `web audio api and canvas visualization`.
 
+----
+
+This project are listed on [Awesome Audio Visualization - WillianJusten](https://github.com/willianjusten/awesome-audio-visualization)
+
+<p align="center">
+  <img id="awesome-audio-visualization" src="https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true" alt="Logo AAV">
+</p>
+
+----
+
 ## Available Scripts
 
 In the project directory, you can run:
