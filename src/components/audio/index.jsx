@@ -193,11 +193,8 @@ class Audio extends Component {
   }
 
   componentDidMount() {
-    this.canvasConfigure()
-
-    setTimeout(() => {
-      this.showPlayer()
-    }, 200)
+    new Promise(resolve => this.canvasConfigure(resolve))
+    .then(() => this.showPlayer())
   }
 
   componentWillUnmount() {
@@ -657,7 +654,7 @@ class Audio extends Component {
     this.loadSong(tracks[musicIndex].url)
   }
 
-  canvasConfigure() {
+  canvasConfigure(resolve) {
     let { canvas, canvasContext } = this.state
     canvas = document.querySelector('#Player-canvas')
     canvasContext = canvas.getContext('2d')
@@ -667,11 +664,11 @@ class Audio extends Component {
       canvas,
       canvasContext
     }, () => {
-      this.calculateSize()
+      this.calculateSize(resolve)
     })
   }
 
-  calculateSize() {
+  calculateSize(resolve) {
     let { canvas } = this.state
     const padding = 120
     const minSize = 740
@@ -700,7 +697,7 @@ class Audio extends Component {
       canvasCy,
       canvasCoord,
       sceneRadius
-    })
+    }, () => resolve())
   }
 
   framerInit() {
