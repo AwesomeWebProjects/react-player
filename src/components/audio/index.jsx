@@ -302,7 +302,7 @@ class Audio extends Component {
   loadSong(url) {
     const { hasStreamSupport } = this.state
 
-    this.audioWorker.postMessage({ type: 'audio', data: 'lorem ipsum' })
+    this.audioWorker.postMessage({ type: 'audio', data: { text: 'lorem ipsum', url }})
 
     if (hasStreamSupport) {
       console.log('fetch and stream')
@@ -373,7 +373,9 @@ class Audio extends Component {
         throw Error('Content-Length response header unavailable')
       }
 
-      this.setState({ audioStreamData: { response: response.clone(), contentLength: response.headers.get('content-length')} })
+      const audioStreamData = { response: response.clone(), contentLength: response.headers.get('content-length') }
+
+      this.setState({ audioStreamData })
 
       const stream = this.readAudioStream(response, contentLength, { all: false, sec: 3, amount: 1245184 })
       return new Response(stream)
