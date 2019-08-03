@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import './style.styl'
 
 class appVersion extends Component {
 	constructor(props) {

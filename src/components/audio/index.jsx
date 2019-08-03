@@ -1,9 +1,8 @@
 import React, { Component } from 'react'
-import './style.styl'
-import rise from '../../assets/music/rise.mp3'
-import fantastic from '../../assets/music/fantastic.mp3'
-import legendsNeverDie from '../../assets/music/legends-never-die.mp3'
-import shortLegendsNeverDie from '../../assets/music/short-legends-never-die.mp3'
+import rise from 'assets/music/rise.mp3'
+import fantastic from 'assets/music/fantastic.mp3'
+import legendsNeverDie from 'assets/music/legends-never-die.mp3'
+import shortLegendsNeverDie from 'assets/music/short-legends-never-die.mp3'
 import audioWorkerJS from './audio.worker.js'
 
 import {
@@ -1270,7 +1269,12 @@ class Audio extends Component {
 
   changeVolume() {
     let { gainNode } = this.state
-    switch (this.state.gainNode.gain.value) {
+
+    if (gainNode == null) {
+      return
+    }
+
+    switch (gainNode.gain.value) {
       case 0:
           gainNode.gain.value = 0.5
         break
