@@ -1,8 +1,9 @@
+let audioStreamData = {}
+
 const readAudioStream = (response, contentLength, params) => {
   const total = parseInt(contentLength, 10)
   let loaded = 0
   const startedStream = new Date()
-  const that = this
 
   const stream = new ReadableStream({
     start(controller) {
@@ -73,6 +74,8 @@ const fetchSong = (url) => {
       throw Error('Content-Length response header unavailable')
     }
 
+    audioStreamData = { response: response.clone(), contentLength: response.headers.get('content-length') }
+
     const stream = readAudioStream(response, contentLength, { all: true, sec: 3, amount: 1245184 })
     return new Response(stream)
   })
@@ -82,20 +85,41 @@ const fetchSong = (url) => {
   .then(response => {
     console.log('Worker: ', response)
 
-    postMessage({ text: 'worker response ', response})
+    postMessage({ text: 'worker response ', response, actionType: 'load' })
+  })
+}
+
+const preloadSong = () => {
+  console.log('----------------------------- finally')
+  new Promise((resolve) => {
+    // this.setState({ audioStreamData: { response: audioStreamData.response.clone(), contentLength: audioStreamData.response.headers.get('content-length') } })
+    console.log('worker stream data: ', audioStreamData)
+    const stream = readAudioStream(audioStreamData.response, audioStreamData.contentLength, { all: true, sec: 1, amount: 1050478 })
+    resolve(new Response(stream))
+  }).then(response => {
+    return response.arrayBuffer()
+  }).then(response => {
+    console.log('Worker: ', response)
+
+    // this function is  posting two times, NEED VALIDATE THIS!
+
+    if (response.byteLength > 0) {
+      postMessage({ text: 'worker response ', response, actionType: 'preload' })
+    }
   })
 }
 
 onmessage = function(event) {
   const { type, data } = event.data
   console.log('worker data:', { type, data })
-  let response = null
 
   switch (type) {
     case 'audio':
-        response = data
-
         fetchSong(data.url)
+      break
+
+    case 'preload':
+        preloadSong()
       break
 
     default:
