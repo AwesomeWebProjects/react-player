@@ -389,7 +389,7 @@ class Audio extends Component {
     if (hasStreamSupport) {
       console.log('fetch and stream')
       if (threadInUse === 'worker') {
-        this.audioWorker.postMessage({ type: 'audio', data: { text: 'lorem ipsum', url, playingFullMusic }})
+        this.audioWorker.postMessage({ type: 'audio', data: { url, playingFullMusic }})
       } else if (threadInUse === 'main') {
         this.audioStream(url)
       } else {
@@ -1348,7 +1348,7 @@ class Audio extends Component {
         if (threadInUse === 'main') {
           this.preLoadCompleteSong()
         } else if (threadInUse === 'worker') {
-          this.audioWorker.postMessage({ type: 'preload', data: { text: 'lorem ipsum', playingFullMusic } })
+          this.audioWorker.postMessage({ type: 'preload', data: { playingFullMusic, all: true } })
         }
       } else {
         // console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)

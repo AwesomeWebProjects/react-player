@@ -60,7 +60,7 @@ const readAudioStream = (response, contentLength, params) => {
   return stream
 }
 
-const fetchSong = (url) => {
+const fetchSong = (url, all = false) => {
   fetch(url).then(response => {
     if (!response.ok) {
       throw Error(`${response.status} ${response.statusText}`)
@@ -77,7 +77,7 @@ const fetchSong = (url) => {
 
     audioStreamData = { response: response.clone(), contentLength: response.headers.get('content-length') }
 
-    const stream = readAudioStream(response, contentLength, { all: true, sec: 3, amount: 1245184 })
+    const stream = readAudioStream(response, contentLength, { all, sec: 3, amount: 1245184 })
     return new Response(stream)
   })
   .then(response => {
@@ -113,7 +113,7 @@ onmessage = function(event) {
 
   switch (type) {
     case 'audio':
-        fetchSong(data.url)
+        fetchSong(data.url, data.all)
       break
 
     case 'preload':
