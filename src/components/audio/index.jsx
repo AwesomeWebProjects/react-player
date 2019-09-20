@@ -801,11 +801,7 @@ class Audio extends Component {
       canvasCy,
       canvasCoord,
       sceneRadius
-    }, () => {
-        if (resolve) {
-          resolve()
-        }
-    })
+    }, () => resolve ? resolve() : null)
   }
 
   framerInit() {
