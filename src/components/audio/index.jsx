@@ -32,7 +32,7 @@ class Audio extends Component {
       /**
        * Audio Context
        */
-      threadInUse: 'worker',
+      threadInUse: 'worker', // 'main' or 'worker'
       audioContext: null,
       analyser: null,
       gainNode: null,
@@ -270,8 +270,14 @@ class Audio extends Component {
 
     const {
       response: responseBuffer,
-      actionType
+      actionType,
+      playingFullMusic
     } = workerResponse.data
+
+    /**
+     * Update state 'playingFullMusic' with the value from worker
+     */
+    this.setState({ playingFullMusic })
 
     console.log('call back data: ', workerResponse.data)
 
@@ -309,45 +315,45 @@ class Audio extends Component {
         })
         break
 
-        case 'preload':
-          audioContext.decodeAudioData(responseBuffer, (buffer) => {
-            if (canLoadFullSong) {
-              this.state.currentSource.disconnect()
+      case 'preload':
+        audioContext.decodeAudioData(responseBuffer, (buffer) => {
+          if (canLoadFullSong) {
+            this.state.currentSource.disconnect()
 
-              const currentSource = audioContext.createBufferSource()
-              currentSource.buffer = buffer
+            const currentSource = audioContext.createBufferSource()
+            currentSource.buffer = buffer
 
-              const offset = (audioContext.currentTime - audioLoadOffsetTime)
+            const offset = (audioContext.currentTime - audioLoadOffsetTime)
 
-              const source = currentSource
-              source.connect(analyser)
-              analyser.connect(gainNode)
-              gainNode.connect(audioContext.destination)
-              javascriptNode.connect(audioContext.destination)
+            const source = currentSource
+            source.connect(analyser)
+            analyser.connect(gainNode)
+            gainNode.connect(audioContext.destination)
+            javascriptNode.connect(audioContext.destination)
 
-              source.start(offset, offset)
+            source.start(offset, offset)
 
-              if (audioContext.state === 'suspended') {
-                audioContext.resume()
-              }
-
-              this.setState({ playing: true, isLoadingFullSong: false })
-
-              this.setState({ currentSource }, () => {
-                console.log('audio decoded and starting music from stream - full song loaded')
-                const offset = (audioContext.currentTime - audioLoadOffsetTime)
-                console.log({
-                  offset,
-                  duration: currentSource.buffer.duration
-                })
-
-                this.setState({ audioContextCreatedTime })
-              })
+            if (audioContext.state === 'suspended') {
+              audioContext.resume()
             }
-          }, function (error) {
-            console.error(error)
-          })
-          break
+
+            this.setState({ playing: true, isLoadingFullSong: false, canLoadFullSong: false })
+
+            this.setState({ currentSource }, () => {
+              console.log('audio decoded and starting music from stream - full song loaded')
+              const offset = (audioContext.currentTime - audioLoadOffsetTime)
+              console.log({
+                offset,
+                duration: currentSource.buffer.duration
+              })
+
+              this.setState({ audioContextCreatedTime })
+            })
+          }
+        }, function (error) {
+          console.error(error)
+        })
+        break
 
       default:
         break
@@ -398,12 +404,16 @@ class Audio extends Component {
   }
 
   loadSong(url) {
-    const { hasStreamSupport, threadInUse } = this.state
+    const {
+      hasStreamSupport,
+      threadInUse,
+      playingFullMusic
+    } = this.state
 
     if (hasStreamSupport) {
       console.log('fetch and stream')
       if (threadInUse === 'worker') {
-        this.audioWorker.postMessage({ type: 'audio', data: { text: 'lorem ipsum', url }})
+        this.audioWorker.postMessage({ type: 'audio', data: { text: 'lorem ipsum', url, playingFullMusic }})
       } else if (threadInUse === 'main') {
         this.audioStream(url)
       } else {
@@ -1362,7 +1372,7 @@ class Audio extends Component {
         if (threadInUse === 'main') {
           this.preLoadCompleteSong()
         } else if (threadInUse === 'worker') {
-          this.audioWorker.postMessage({ type: 'preload', data: { text: 'lorem ipsum' } })
+          this.audioWorker.postMessage({ type: 'preload', data: { text: 'lorem ipsum', playingFullMusic } })
         }
       } else {
         // console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)

@@ -1,4 +1,5 @@
 let audioStreamData = {}
+let playingFullMusic = false
 
 const readAudioStream = (response, contentLength, params) => {
   const total = parseInt(contentLength, 10)
@@ -35,7 +36,7 @@ const readAudioStream = (response, contentLength, params) => {
           }
           if (done) {
             console.log(`Worker: Close stream done`)
-            // that.setState({ playingFullMusic: true })
+            playingFullMusic = true
             reader.releaseLock()
             controller.close()
             return
@@ -85,7 +86,7 @@ const fetchSong = (url) => {
   .then(response => {
     console.log('Worker: ', response)
 
-    postMessage({ text: 'worker response ', response, actionType: 'load' })
+    postMessage({ text: 'worker response ', response, actionType: 'load', playingFullMusic })
   })
 }
 
@@ -101,17 +102,14 @@ const preloadSong = () => {
   }).then(response => {
     console.log('Worker: ', response)
 
-    // this function is  posting two times, NEED VALIDATE THIS!
-
-    if (response.byteLength > 0) {
-      postMessage({ text: 'worker response ', response, actionType: 'preload' })
-    }
+    postMessage({ text: 'worker response ', response, actionType: 'preload', playingFullMusic })
   })
 }
 
 onmessage = function(event) {
   const { type, data } = event.data
   console.log('worker data:', { type, data })
+  playingFullMusic = data.playingFullMusic
 
   switch (type) {
     case 'audio':
