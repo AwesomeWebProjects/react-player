@@ -132,17 +132,10 @@ class appProvider extends Component {
     /**
      * functions
      */
-    this.updateState = this.updateState.bind(this)
+    this.myFunction = this.myFunction.bind(this)
   }
 
-  /**
-   * @param {Object} partialState
-   * @param {Function} callback
-   */
-  updateState(partialState) {
-    console.log(partialState)
-    this.setState(partialState)
-  }
+  myFunction() {}
 
 	/**
 	 * React Render
@@ -153,9 +146,7 @@ class appProvider extends Component {
         /**
          * Player
          */
-        player: this.state.player,
-        updateState: this.updateState,
-        setState: this.setState
+        player: this.state.player
       }}>
         { this.props.children }
       </appContext.Provider>
