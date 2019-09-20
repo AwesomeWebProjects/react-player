@@ -1,8 +1,4 @@
 import React, { Component } from 'react'
-import rise from 'assets/music/rise.mp3'
-import fantastic from 'assets/music/fantastic.mp3'
-import legendsNeverDie from 'assets/music/legends-never-die.mp3'
-import shortLegendsNeverDie from 'assets/music/short-legends-never-die.mp3'
 import audioWorkerJS from './audio.worker.js'
 import { appContext } from 'context/app-context'
 
@@ -40,28 +36,7 @@ class Audio extends Component {
       currentSource: null,
       bufferLength: null,
       duration: 0,
-      tracks: [
-        {
-          name: 'Small Piece of music LND',
-          artist: 'League of Legends',
-          url: shortLegendsNeverDie
-        },
-        {
-          name: 'Legends Never Die',
-          artist: 'League of Legends',
-          url: legendsNeverDie
-        },
-        {
-          name: 'Rise',
-          artist: 'League of Legends',
-          url: rise
-        },
-        {
-          name: 'Fantastic - Cinematic Sound',
-          artist: 'AudioJungle',
-          url: fantastic
-        },
-      ],
+      tracks: this.props.tracks || [],
       musicIndex: 0,
       playing: false,
       javascriptNode: null,

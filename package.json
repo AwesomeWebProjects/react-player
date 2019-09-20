@@ -2,6 +2,7 @@
   "name": "audio-player",
   "version": "0.1.2",
   "author": "Daniel Barion // @danielbarion (github)",
+  "main": "src/export-components.js",
   "license": "MIT",
   "private": false,
   "repository": "git://github.com/danielbarion/React-Player.git",
