@@ -4,6 +4,7 @@
   "author": "Daniel Barion // @danielbarion (github)",
   "license": "MIT",
   "private": false,
+  "repository": "git://github.com/danielbarion/React-Player.git",
   "devDependencies": {
     "@babel/core": "7.4.3",
     "@svgr/webpack": "4.1.0",

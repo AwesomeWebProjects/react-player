@@ -32,6 +32,7 @@ class Audio extends Component {
       /**
        * Audio Context
        */
+      threadInUse: 'worker', // 'main' or 'worker'
       audioContext: null,
       analyser: null,
       gainNode: null,
@@ -253,8 +254,111 @@ class Audio extends Component {
     })
   }
 
-  handleWorkerCallback(data) {
-    console.log('call back data: ', data)
+  handleWorkerCallback(workerResponse) {
+    const {
+      audioContext,
+      analyser,
+      gainNode,
+      javascriptNode,
+      canLoadFullSong
+    } = this.state
+
+    let {
+      audioContextCreatedTime,
+      audioLoadOffsetTime
+    } = this.state
+
+    const {
+      response: responseBuffer,
+      actionType,
+      playingFullMusic
+    } = workerResponse.data
+
+    /**
+     * Update state 'playingFullMusic' with the value from worker
+     */
+    this.setState({ playingFullMusic })
+
+    console.log('call back data: ', workerResponse.data)
+
+    switch (actionType) {
+      case 'load':
+        this.setState({ workerBuffer: responseBuffer }, () => {
+          console.log('start decode audio')
+          audioContext.decodeAudioData(responseBuffer, (buffer) => {
+            if (this.state.currentSource !== null) {
+              this.state.currentSource.disconnect()
+            }
+
+            const currentSource = audioContext.createBufferSource()
+
+            currentSource.buffer = buffer
+            this.setState({ currentSource }, () => {
+              console.log('audio decoded and starting music')
+              this.playSound()
+              audioLoadOffsetTime = (new Date() - audioContextCreatedTime) / 1000
+
+              if (audioLoadOffsetTime > audioContext.currentTime) {
+                audioLoadOffsetTime = audioContext.currentTime
+              }
+
+              this.setState({
+                audioContextCreatedTime,
+                audioLoadOffsetTime,
+                isLoadingSong: false,
+                canLoadFullSong: true
+              })
+            })
+          }, function (error) {
+            console.error(error)
+          })
+        })
+        break
+
+      case 'preload':
+        audioContext.decodeAudioData(responseBuffer, (buffer) => {
+          if (canLoadFullSong) {
+            this.state.currentSource.disconnect()
+
+            const currentSource = audioContext.createBufferSource()
+            currentSource.buffer = buffer
+
+            const offset = (audioContext.currentTime - audioLoadOffsetTime)
+
+            const source = currentSource
+            source.connect(analyser)
+            analyser.connect(gainNode)
+            gainNode.connect(audioContext.destination)
+            javascriptNode.connect(audioContext.destination)
+
+            source.start(offset, offset)
+
+            if (audioContext.state === 'suspended') {
+              audioContext.resume()
+            }
+
+            this.setState({ playing: true, isLoadingFullSong: false, canLoadFullSong: false })
+
+            this.setState({ currentSource }, () => {
+              console.log('audio decoded and starting music from stream - full song loaded')
+              const offset = (audioContext.currentTime - audioLoadOffsetTime)
+              console.log({
+                offset,
+                duration: currentSource.buffer.duration
+              })
+
+              this.setState({ audioContextCreatedTime })
+            })
+          }
+        }, function (error) {
+          console.error(error)
+        })
+        break
+
+      default:
+        break
+    }
+
   }
 
   init() {
@@ -300,13 +404,21 @@ class Audio extends Component {
   }
 
   loadSong(url) {
-    const { hasStreamSupport } = this.state
-
-    this.audioWorker.postMessage({ type: 'audio', data: 'lorem ipsum' })
+    const {
+      hasStreamSupport,
+      threadInUse,
+      playingFullMusic
+    } = this.state
 
     if (hasStreamSupport) {
       console.log('fetch and stream')
-      this.audioStream(url)
+      if (threadInUse === 'worker') {
+        this.audioWorker.postMessage({ type: 'audio', data: { text: 'lorem ipsum', url, playingFullMusic }})
+      } else if (threadInUse === 'main') {
+        this.audioStream(url)
+      } else {
+        console.error('React Player - No thread specified')
+      }
     } else {
       this.audioXMLHttpRequest(url)
     }
@@ -373,7 +485,9 @@ class Audio extends Component {
         throw Error('Content-Length response header unavailable')
       }
 
-      this.setState({ audioStreamData: { response: response.clone(), contentLength: response.headers.get('content-length')} })
+      const audioStreamData = { response: response.clone(), contentLength: response.headers.get('content-length') }
+
+      this.setState({ audioStreamData })
 
       const stream = this.readAudioStream(response, contentLength, { all: false, sec: 3, amount: 1245184 })
       return new Response(stream)
@@ -697,7 +811,7 @@ class Audio extends Component {
       canvasCy,
       canvasCoord,
       sceneRadius
-    }, () => resolve())
+    }, () => resolve ? resolve() : null)
   }
 
   framerInit() {
@@ -1245,7 +1359,8 @@ class Audio extends Component {
       playingFullMusic,
       hasStreamSupport,
       isLoadingFullSong,
-      canLoadFullSong
+      canLoadFullSong,
+      threadInUse
     } = this.state
 
     if (audioContext && audioContext.state !== 'suspended' && currentSource) {
@@ -1254,7 +1369,11 @@ class Audio extends Component {
 
       if (audioCurrentTime >= (currentDuration - 3.5) && !playingFullMusic && hasStreamSupport && !isLoadingFullSong && canLoadFullSong) {
         this.setState({ isLoadingFullSong: true })
-        this.preLoadCompleteSong()
+        if (threadInUse === 'main') {
+          this.preLoadCompleteSong()
+        } else if (threadInUse === 'worker') {
+          this.audioWorker.postMessage({ type: 'preload', data: { text: 'lorem ipsum', playingFullMusic } })
+        }
       } else {
         // console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)
         if (playingFullMusic && audioCurrentTime >= (currentDuration - 1.5) && !isLoadingFullSong ) {
