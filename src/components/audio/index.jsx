@@ -738,10 +738,10 @@ class Audio extends Component {
 
     if (currentSource) {
       currentSource.disconnect()
-      this.setState({ playing: false, musicIndex, playingFullMusic: false, canLoadFullSong: false })
+      this.setState({ playing: false })
     }
 
-    this.loadSong(tracks[musicIndex].url)
+    this.setState({ musicIndex, playingFullMusic: false, canLoadFullSong: true }, () => this.loadSong(tracks[musicIndex].url))
   }
 
   canvasConfigure(resolve) {
@@ -1342,6 +1342,8 @@ class Audio extends Component {
     if (audioContext && audioContext.state !== 'suspended' && currentSource) {
       let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
       const currentDuration = currentSource.buffer.duration
+
+      console.log({playingFullMusic, canLoadFullSong, isLoadingFullSong})
 
       if (audioCurrentTime >= (currentDuration - 3.5) && !playingFullMusic && hasStreamSupport && !isLoadingFullSong && canLoadFullSong) {
         this.setState({ isLoadingFullSong: true })
