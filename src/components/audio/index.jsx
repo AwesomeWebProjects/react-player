@@ -1343,7 +1343,7 @@ class Audio extends Component {
       let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
       const currentDuration = currentSource.buffer.duration
 
-      console.log({playingFullMusic, canLoadFullSong, isLoadingFullSong})
+      // console.log({playingFullMusic, canLoadFullSong, isLoadingFullSong})
 
       if (audioCurrentTime >= (currentDuration - 3.5) && !playingFullMusic && hasStreamSupport && !isLoadingFullSong && canLoadFullSong) {
         this.setState({ isLoadingFullSong: true })
