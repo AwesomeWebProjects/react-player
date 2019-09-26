@@ -1,11 +1,14 @@
 {
-  "name": "audio-player",
+  "name": "@awp/audio-player",
   "version": "0.1.2",
   "author": "Daniel Barion // @danielbarion (github)",
   "main": "src/export-components.js",
   "license": "MIT",
   "private": false,
-  "repository": "git://github.com/AwesomeWebProjects/React-Player",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/AwesomeWebProjects/React-Player.git"
+  },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
@@ -142,5 +145,20 @@
     "presets": [
       "react-app"
     ]
-  }
+  },
+  "description": "<p align=\"center\">\r   <img id=\"awesome-audio-visualization\" src=\"https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true\" alt=\"Logo AAV\">\r </p>",
+  "bugs": {
+    "url": "https://github.com/AwesomeWebProjects/React-Player/issues"
+  },
+  "homepage": "https://github.com/AwesomeWebProjects/React-Player#readme",
+  "keywords": [
+    "react",
+    "js",
+    "canvas",
+    "audio",
+    "web",
+    "audio",
+    "api",
+    "component"
+  ]
 }
