@@ -15,19 +15,19 @@ const readAudioStream = (response, contentLength, params) => {
           if (!params.all) {
             if (params.amount) {
               if (params.amount < total && loaded >= params.amount) {
-                console.log(`Worker: Close stream frag - amount`)
+                // console.log(`Worker: Close stream frag - amount`)
                 reader.releaseLock()
                 controller.close()
                 return
               } else if (loaded >= (65536 * 5)) { // 327.680
-                console.log(`Worker: Close stream frag - amount`)
+                // console.log(`Worker: Close stream frag - amount`)
                 reader.releaseLock()
                 controller.close()
                 return
               }
             } else {
               if (((new Date() - startedStream) / 1000) >= (params.sec || 5)) {
-                console.log(`Worker: Close stream frag - time`)
+                // console.log(`Worker: Close stream frag - time`)
                 reader.releaseLock()
                 controller.close()
                 return
@@ -35,7 +35,7 @@ const readAudioStream = (response, contentLength, params) => {
             }
           }
           if (done) {
-            console.log(`Worker: Close stream done`)
+            // console.log(`Worker: Close stream done`)
             playingFullMusic = true
             reader.releaseLock()
             controller.close()
@@ -43,7 +43,7 @@ const readAudioStream = (response, contentLength, params) => {
           }
 
           loaded += value.byteLength
-          console.log('Worker: ', { loaded, total, percent: `${((loaded * 100) / total).toFixed(2)}%` }, (new Date() - startedStream) / 1000)
+          // console.log('Worker: ', { loaded, total, percent: `${((loaded * 100) / total).toFixed(2)}%` }, (new Date() - startedStream) / 1000)
           controller.enqueue(value)
 
           read()
@@ -84,23 +84,22 @@ const fetchSong = (url, all = false) => {
     return response.arrayBuffer()
   })
   .then(response => {
-    console.log('Worker: ', response)
+    // console.log('Worker: ', response)
 
     postMessage({ text: 'worker response ', response, actionType: 'load', playingFullMusic })
   })
 }
 
 const preloadSong = () => {
-  console.log('----------------------------- finally')
   new Promise((resolve) => {
     // this.setState({ audioStreamData: { response: audioStreamData.response.clone(), contentLength: audioStreamData.response.headers.get('content-length') } })
-    console.log('worker stream data: ', audioStreamData)
+    // console.log('worker stream data: ', audioStreamData)
     const stream = readAudioStream(audioStreamData.response, audioStreamData.contentLength, { all: true, sec: 1, amount: 1050478 })
     resolve(new Response(stream))
   }).then(response => {
     return response.arrayBuffer()
   }).then(response => {
-    console.log('Worker: ', response)
+    // console.log('Worker: ', response)
 
     postMessage({ text: 'worker response ', response, actionType: 'preload', playingFullMusic })
   })
@@ -108,7 +107,7 @@ const preloadSong = () => {
 
 onmessage = function(event) {
   const { type, data } = event.data
-  console.log('worker data:', { type, data })
+  // console.log('worker data:', { type, data })
   playingFullMusic = data.playingFullMusic
 
   switch (type) {

@@ -5,7 +5,10 @@
   "main": "src/export-components.js",
   "license": "MIT",
   "private": false,
-  "repository": "git://github.com/danielbarion/React-Player.git",
+  "repository": "git://github.com/AwesomeWebProjects/React-Player",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "devDependencies": {
     "@babel/core": "7.4.3",
     "@svgr/webpack": "4.1.0",
