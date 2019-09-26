@@ -29,7 +29,7 @@ class Audio extends Component {
       /**
        * Audio Context
        */
-      threadInUse: 'worker', // 'main' or 'worker'
+      threadInUse: this.props.thread || 'worker', // 'main' or 'worker'
       audioContext: null,
       analyser: null,
       gainNode: null,

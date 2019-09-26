@@ -62,7 +62,10 @@ class App extends Component {
 		 */
 		const main = () => (
 			<div className={_root}>
-				<Audio key='audio-component' tracks={this.state.tracks} />
+				<Audio key='audio-component'
+					tracks={this.state.tracks}
+					thread='worker'
+				/>
 				<AppFooterNav key='app-footer-nav' />
 				<AppVersion key='app-version' />
 			</div>
