@@ -1,5 +1,5 @@
 {
-  "name": "@awp/audio-player",
+  "name": "@AwesomeWebProjects/audio-player",
   "version": "0.1.2",
   "author": "Daniel Barion // @danielbarion (github)",
   "main": "src/export-components.js",
