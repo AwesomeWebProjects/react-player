@@ -1,9 +1,17 @@
 {
-  "name": "audio-player",
-  "version": "0.1.2",
+  "name": "@AwesomeWebProjects/audio-player",
+  "version": "1.0.0",
   "author": "Daniel Barion // @danielbarion (github)",
+  "main": "src/export-components.js",
   "license": "MIT",
   "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/AwesomeWebProjects/React-Player.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "devDependencies": {
     "@babel/core": "7.4.3",
     "@svgr/webpack": "4.1.0",
@@ -60,13 +68,13 @@
     "worker-loader": "^2.0.0"
   },
   "dependencies": {
+    "@material-ui/core": "^3.8.1",
+    "@material-ui/icons": "^3.0.1",
     "react": "^16.8.6",
     "react-app-polyfill": "^1.0.1",
     "react-dev-utils": "^9.0.1",
     "react-dom": "^16.8.6",
-    "react-router-dom": "^5.0.1",
-    "@material-ui/core": "^3.8.1",
-    "@material-ui/icons": "^3.0.1"
+    "react-router-dom": "^5.0.1"
   },
   "scripts": {
     "start": "node scripts/start.js",
@@ -137,5 +145,20 @@
     "presets": [
       "react-app"
     ]
-  }
+  },
+  "description": "<p align=\"center\">\r   <img id=\"awesome-audio-visualization\" src=\"https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true\" alt=\"Logo AAV\">\r </p>",
+  "bugs": {
+    "url": "https://github.com/AwesomeWebProjects/React-Player/issues"
+  },
+  "homepage": "https://github.com/AwesomeWebProjects/React-Player#readme",
+  "keywords": [
+    "react",
+    "js",
+    "canvas",
+    "audio",
+    "web",
+    "audio",
+    "api",
+    "component"
+  ]
 }

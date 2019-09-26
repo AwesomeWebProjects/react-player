@@ -1,3 +1,11 @@
+<p align="center">
+  <img id="awesome-audio-visualization" src="https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true" alt="Logo AAV">
+</p>
+
+This project are listed on [Awesome Audio Visualization - WillianJusten](https://github.com/willianjusten/awesome-audio-visualization)
+
+----
+
 ![Web Player](https://i.imgur.com/ApMUQE9.png)
 
 [Demo](https://dazzling-jang-471a34.netlify.com/)
@@ -7,6 +15,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 And based on https://codepen.io/alexdevp/full/RNELPV - Alex Permyakov
 
 ## About the Project
+
 A web player build with react and web audio api.
 
 The layout was inspired by `Alex Permyakov` example in codepen and the audio processing was write from zero.
