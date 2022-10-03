@@ -42,7 +42,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.26.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "husky": "^7.0.2",
+    "husky": "^8.0.1",
     "lint-staged": "^11.1.2",
     "postcss": "^8.3.8",
     "prettier": "^2.4.1",
@@ -102,7 +102,7 @@
     "type": "git",
     "url": "git://github.com/AwesomeWebProjects/React-Player.git"
   },
-    "description": "<p align=\"center\">\r   <img id=\"awesome-audio-visualization\" src=\"https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true\" alt=\"Logo AAV\">\r </p>",
+  "description": "<p align=\"center\">\r   <img id=\"awesome-audio-visualization\" src=\"https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true\" alt=\"Logo AAV\">\r </p>",
   "bugs": {
     "url": "https://github.com/AwesomeWebProjects/React-Player/issues"
   },
