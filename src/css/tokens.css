@@ -1,0 +1,255 @@
+/* Inter web font */
+@import url('https://rsms.me/inter/inter.css');
+
+html {
+  font-family: 'Inter', sans-serif;
+}
+
+@supports (font-variation-settings: normal) {
+  html {
+    font-family: 'Inter var', sans-serif;
+  }
+}
+
+:root {
+  /* primary */
+  --begrowth-color-primary-50: #fdf3e1;
+  --begrowth-color-primary-100: #fbe2b4;
+  --begrowth-color-primary-200: #f9cf82;
+  --begrowth-color-primary-300: #f6bc50;
+  --begrowth-color-primary-400: #f4ad2b;
+  --begrowth-color-primary-500: #f29f05;
+  --begrowth-color-primary-600: #f09704;
+  --begrowth-color-primary-700: #ee8d04;
+  --begrowth-color-primary-800: #ec8303;
+  --begrowth-color-primary-900: #e87201;
+  --begrowth-color-primary-50-contrast: #19121c;
+  --begrowth-color-primary-100-contrast: #19121c;
+  --begrowth-color-primary-200-contrast: #19121c;
+  --begrowth-color-primary-300-contrast: #19121c;
+  --begrowth-color-primary-400-contrast: #fff;
+  --begrowth-color-primary-500-contrast: #fff;
+  --begrowth-color-primary-600-contrast: #fff;
+  --begrowth-color-primary-700-contrast: #fff;
+  --begrowth-color-primary-800-contrast: #fff;
+  --begrowth-color-primary-900-contrast: #fff;
+
+  /* secondary */
+  --begrowth-color-secondary-50: #ebe6f0;
+  --begrowth-color-secondary-100: #ccc2da;
+  --begrowth-color-secondary-200: #aa99c2;
+  --begrowth-color-secondary-300: #8870aa;
+  --begrowth-color-secondary-400: #6f5197;
+  --begrowth-color-secondary-500: #553285;
+  --begrowth-color-secondary-600: #4e2d7d;
+  --begrowth-color-secondary-700: #442672;
+  --begrowth-color-secondary-800: #3b1f68;
+  --begrowth-color-secondary-900: #2a1355;
+  --begrowth-color-secondary-50-contrast: #19121c;
+  --begrowth-color-secondary-100-contrast: #19121c;
+  --begrowth-color-secondary-200-contrast: #19121c;
+  --begrowth-color-secondary-300-contrast: #19121c;
+  --begrowth-color-secondary-400-contrast: #19121c;
+  --begrowth-color-secondary-500-contrast: #19121c;
+  --begrowth-color-secondary-600-contrast: #fff;
+  --begrowth-color-secondary-700-contrast: #fff;
+  --begrowth-color-secondary-800-contrast: #fff;
+  --begrowth-color-secondary-900-contrast: #fff;
+
+  /* neutral */
+  --begrowth-color-neutral-50: #f8f7f8;
+  --begrowth-color-neutral-100: #f3f2f4;
+  --begrowth-color-neutral-200: #e5e3e6;
+  --begrowth-color-neutral-300: #ccc8cf;
+  --begrowth-color-neutral-400: #b9b3bc;
+  --begrowth-color-neutral-500: #a097a4;
+  --begrowth-color-neutral-600: #7d7283;
+  --begrowth-color-neutral-700: #6a5d70;
+  --begrowth-color-neutral-800: #53445b;
+  --begrowth-color-neutral-900: #19121c;
+  --begrowth-color-neutral-50-contrast: #19121c;
+  --begrowth-color-neutral-100-contrast: #19121c;
+  --begrowth-color-neutral-200-contrast: #19121c;
+  --begrowth-color-neutral-300-contrast: #19121c;
+  --begrowth-color-neutral-400-contrast: #19121c;
+  --begrowth-color-neutral-500-contrast: #19121c;
+  --begrowth-color-neutral-600-contrast: #19121c;
+  --begrowth-color-neutral-700-contrast: #fff;
+  --begrowth-color-neutral-800-contrast: #fff;
+  --begrowth-color-neutral-900-contrast: #fff;
+
+  /* success */
+  --begrowth-color-success-50: #f5fcf7;
+  --begrowth-color-success-100: #f0fff5;
+  --begrowth-color-success-200: #ccfce3;
+  --begrowth-color-success-300: #8cfac7;
+  --begrowth-color-success-400: #2ce69b;
+  --begrowth-color-success-500: #00d68f;
+  --begrowth-color-success-600: #00b887;
+  --begrowth-color-success-700: #00997a;
+  --begrowth-color-success-800: #007d6c;
+  --begrowth-color-success-900: #004a42;
+  --begrowth-color-success-50-contrast: #19121c;
+  --begrowth-color-success-100-contrast: #19121c;
+  --begrowth-color-success-200-contrast: #19121c;
+  --begrowth-color-success-300-contrast: #19121c;
+  --begrowth-color-success-400-contrast: #19121c;
+  --begrowth-color-success-500-contrast: #19121c;
+  --begrowth-color-success-600-contrast: #19121c;
+  --begrowth-color-success-700-contrast: #19121c;
+  --begrowth-color-success-800-contrast: #fff;
+  --begrowth-color-success-900-contrast: #fff;
+
+  /* danger */
+  --begrowth-color-danger-50: #fccaca;
+  --begrowth-color-danger-100: #f36e6e;
+  --begrowth-color-danger-200: #f15454;
+  --begrowth-color-danger-300: #ef3939;
+  --begrowth-color-danger-400: #ed1f1f;
+  --begrowth-color-danger-500: #dd1212;
+  --begrowth-color-danger-600: #c21010;
+  --begrowth-color-danger-700: #a80e0e;
+  --begrowth-color-danger-800: #8d0c0c;
+  --begrowth-color-danger-900: #730909;
+  --begrowth-color-danger-50-contrast: #19121c;
+  --begrowth-color-danger-100-contrast: #19121c;
+  --begrowth-color-danger-200-contrast: #19121c;
+  --begrowth-color-danger-300-contrast: #19121c;
+  --begrowth-color-danger-400-contrast: #19121c;
+  --begrowth-color-danger-500-contrast: #fff;
+  --begrowth-color-danger-600-contrast: #fff;
+  --begrowth-color-danger-700-contrast: #fff;
+  --begrowth-color-danger-800-contrast: #fff;
+  --begrowth-color-danger-900-contrast: #fff;
+
+  /* warning */
+  --begrowth-color-warning-50: #fae9be;
+  --begrowth-color-warning-100: #f5ce69;
+  --begrowth-color-warning-200: #f4c651;
+  --begrowth-color-warning-300: #f2be3a;
+  --begrowth-color-warning-400: #f1b722;
+  --begrowth-color-warning-500: #ebad0f;
+  --begrowth-color-warning-600: #d39c0e;
+  --begrowth-color-warning-700: #bc8a0c;
+  --begrowth-color-warning-800: #a4790b;
+  --begrowth-color-warning-900: #8d6809;
+  --begrowth-color-warning-50-contrast: #19121c;
+  --begrowth-color-warning-100-contrast: #19121c;
+  --begrowth-color-warning-200-contrast: #19121c;
+  --begrowth-color-warning-300-contrast: #19121c;
+  --begrowth-color-warning-400-contrast: #19121c;
+  --begrowth-color-warning-500-contrast: #19121c;
+  --begrowth-color-warning-600-contrast: #19121c;
+  --begrowth-color-warning-700-contrast: #19121c;
+  --begrowth-color-warning-800-contrast: #19121c;
+  --begrowth-color-warning-900-contrast: #fff;
+
+  /* info */
+  --begrowth-color-info-50: #f2f8ff;
+  --begrowth-color-info-100: #e0efff;
+  --begrowth-color-info-200: #c7e2ff;
+  --begrowth-color-info-300: #94cbff;
+  --begrowth-color-info-400: #42aaff;
+  --begrowth-color-info-500: #0095ff;
+  --begrowth-color-info-600: #006fd6;
+  --begrowth-color-info-700: #0057c2;
+  --begrowth-color-info-800: #0041a8;
+  --begrowth-color-info-900: #002885;
+  --begrowth-color-info-50-contrast: #19121c;
+  --begrowth-color-info-100-contrast: #19121c;
+  --begrowth-color-info-200-contrast: #19121c;
+  --begrowth-color-info-300-contrast: #19121c;
+  --begrowth-color-info-400-contrast: #19121c;
+  --begrowth-color-info-500-contrast: #19121c;
+  --begrowth-color-info-600-contrast: #fff;
+  --begrowth-color-info-700-contrast: #fff;
+  --begrowth-color-info-800-contrast: #fff;
+  --begrowth-color-info-900-contrast: #fff;
+
+  /* gradients */
+  --begrowth-color-gradient-a: linear-gradient(#fff, #f8f7f8);
+  --begrowth-color-gradient-b: linear-gradient(#7900ad, #aa00ad);
+  --begrowth-color-gradient-c: linear-gradient(#fff, #f3f2f4, #fff);
+
+  /* others */
+  --begrowth-color-white: #fff;
+
+  /* spacings */
+  --begrowth-spacing-xxs: 4px;
+  --begrowth-spacing-s: 8px;
+  --begrowth-spacing-sm: 12px;
+  --begrowth-spacing-m: 16px;
+  --begrowth-spacing-l: 24px;
+  --begrowth-spacing-xl: 32px;
+  --begrowth-spacing-xxl: 48px;
+  --begrowth-spacing-xxxl: 64px;
+
+  /* outside shadow */
+  --begrowth-shadow-1: 0 2px 2px rgba(0, 0, 0, 0.15);
+  --begrowth-shadow-2: 0 4px 5px rgba(0, 0, 0, 0.15);
+  --begrowth-shadow-3: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --begrowth-shadow-4: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --begrowth-shadow-5: 0 16px 32px rgba(0, 0, 0, 0.15);
+  --begrowth-shadow-6: 0 32px 64px rgba(0, 0, 0, 0.15);
+
+  /* general sizes */
+  --begrowth-size-field-height: 56px;
+  --begrowth-size-field-select-option-height: 35px;
+  --begrowth-size-standard-button-height: 48px;
+  --begrowth-size-inline-button-height: 32px;
+  --begrowth-size-micro-button-height: 24px;
+  --begrowth-size-extended-button-height: 40px;
+  --begrowth-size-extended-micro-button-height: 28px;
+  --begrowth-size-circular-button: 64px;
+  --begrowth-size-circular-micro-button: 32px;
+  --begrowth-size-header-height: 64px;
+  --begrowth-size-container-width: 1024px;
+
+  /* icon sizes */
+  --begrowth-size-icon-xs: 16px;
+  --begrowth-size-icon-s: 20px;
+  --begrowth-size-icon-m: 24px;
+  --begrowth-size-icon-l: 32px;
+  --begrowth-size-icon-xl: 40px;
+
+  /* fonts */
+  --begrowth-font-family: 'Inter', sans-serif;
+
+  /* font size */
+  --begrowth-font-size-xxs: 11px;
+  --begrowth-font-size-xs: 12px;
+  --begrowth-font-size-s: 14px;
+  --begrowth-font-size-m: 16px;
+  --begrowth-font-size-l: 19px;
+  --begrowth-font-size-xl: 28px;
+  --begrowth-font-size-xxl: 43px;
+  --begrowth-font-size-xxxl: 64px;
+
+  /* font weight */
+  --begrowth-font-weight-regular: 400;
+  --begrowth-font-weight-medium: 500;
+  --begrowth-font-weight-semibold: 600;
+  --begrowth-font-weight-bold: 700;
+  --begrowth-font-weight-black: 900;
+
+  /* font style */
+  --begrowth-font-field-support: var(--begrowth-font-weight-regular) var(--begrowth-font-size-xs)
+    var(--begrowth-font-family);
+  --begrowth-font-field-label: var(--begrowth-font-weight-regular) var(--begrowth-font-size-m)
+    var(--begrowth-font-family);
+  --begrowth-font-list-label: var(--begrowth-font-weight-medium) var(--begrowth-font-size-m)
+    var(--begrowth-font-family);
+
+  /* border radius */
+  --begrowth-border-radius-s: 4px;
+  --begrowth-border-radius-m: 8px;
+  --begrowth-border-radius-l: 12px;
+  --begrowth-border-radius-xl: 16px;
+  --begrowth-border-radius-pill: 500px;
+  --begrowth-border-radius-circle: 50%;
+
+  /* depths */
+  --begrowth-depth-base: 1;
+  --begrowth-depth-sidebar-nav: 2;
+  --begrowth-depth-modal: 3;
+}
