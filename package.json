@@ -10,6 +10,7 @@
     "prettier": "prettier --config ./.prettierrc.json --write \"**/*{.js,.jsx,.css}\"",
     "dev": "node ./cli.js --env=development && node --max_old_space_size=2048 ./node_modules/rollup/dist/bin/rollup -c rollup.config.dev.js --watch",
     "build": "node ./cli.js --env=production && node --max_old_space_size=2048 ./node_modules/rollup/dist/bin/rollup -c rollup.config.prod.js",
+    "build:netlify": "node ./cli.js --env=production && node --max_old_space_size=2048 ./node_modules/rollup/dist/bin/rollup -c rollup.config.netlify.js",
     "build:debug": "node ./cli.js --env=production && node --max_old_space_size=2048 ./node_modules/rollup/dist/bin/rollup -c rollup.config.prod.js --config-debug=true",
     "prepare": "husky install"
   },
