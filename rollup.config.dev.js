@@ -1,4 +1,4 @@
-import { babel } from '@rollup/plugin-babel'
+// import { babel } from '@rollup/plugin-babel'
 import { string } from 'rollup-plugin-string'
 import analyze from 'rollup-plugin-analyzer'
 import commonjs from '@rollup/plugin-commonjs'
@@ -57,11 +57,11 @@ const plugins = [
   commonjs({
     include: 'node_modules/**',
   }),
-  babel({
-    babelHelpers: 'bundled',
-    exclude: 'node_modules/**',
-    presets: ['@babel/env', '@babel/preset-react'],
-  }),
+  // babel({
+  //   babelHelpers: 'bundled',
+  //   exclude: 'node_modules/**',
+  //   presets: ['@babel/env', '@babel/preset-react'],
+  // }),
   analyze(),
   filesize(),
   copy({

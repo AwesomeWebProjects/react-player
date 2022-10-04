@@ -11,9 +11,11 @@ import copy from 'rollup-plugin-copy'
 import html from 'rollup-plugin-html-scaffold'
 import { terser } from 'rollup-plugin-terser'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
+import ts from '@rollup/plugin-typescript'
+import typescript from 'typescript'
 import pkg from './package.json'
 
-const input = ['src/index.js']
+const input = ['src/index.ts']
 
 const name = 'ReactComponents'
 
@@ -53,6 +55,10 @@ const plugins = [
   }),
   nodeResolve({
     modulePaths: ['src', 'node_modules', 'src/components'],
+  }),
+  ts({
+    typescript,
+    tsconfig: './tsconfig.json',
   }),
   commonjs({
     include: 'node_modules/**',
