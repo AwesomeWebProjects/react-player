@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`Typograpy: simple render test 1`] = `
-<p
-  className="typography bodyS"
->
-  Hello worldddd
-</p>
-`;

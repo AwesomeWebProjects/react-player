@@ -66,7 +66,7 @@ const plugins = [
   filesize(),
   copy({
     targets: [
-      { src: 'assets', dest: 'build/' },
+      { src: 'src/assets', dest: 'build/' },
       { src: 'public/manifest.json', dest: 'build/' },
       { src: 'public/offline.html', dest: 'build/' },
     ],
