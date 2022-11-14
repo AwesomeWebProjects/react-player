@@ -28,13 +28,36 @@ const tracks = [
 			]
 
 const Player = ({ className, ...rest }: Player) => {
-  const { state, setFramerLoadingAngle } = useAppGlobalState()
+  const { state, setFramerLoadingAngle, setAudioContext, setAudioContextCreatedTime, setAnalyser, setGainNode, setFramerFrequencyData, setBufferLength, setJavascriptNode } = useAppGlobalState()
 
   const initialize = () => {
-    // const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioContext = new AudioContext()
     const audioContextCreatedTime = new Date()
 
+    // @TODO: refactor this one to use a not deprecated method
+    const javascriptNode = audioContext.createScriptProcessor(2048, 1, 1)
+
+    const analyser = audioContext.createAnalyser()
+    const gainNode = audioContext.createGain()
+
+    analyser.fftSize = 2048
+    const bufferLength = analyser.frequencyBinCount
+    const dataArray = new Uint8Array(bufferLength)
+
+    // @TODO: refactor this one to use a not deprecated method
+    javascriptNode.onaudioprocess = () => {
+      analyser.getByteFrequencyData(state.framerFrequencyData) // For Bits
+      // analyser.getByteTimeDomainData(state.framerFrequencyData) // For Waves
+    }
+
+    setAudioContext(audioContext)
+    setAudioContextCreatedTime(audioContextCreatedTime)
+    setAnalyser(analyser)
+    setGainNode(gainNode)
+    setFramerFrequencyData(dataArray)
+    setBufferLength(bufferLength)
+    setJavascriptNode(javascriptNode)
   }
 
   // framer
@@ -47,7 +70,6 @@ const Player = ({ className, ...rest }: Player) => {
   <div className={styles['player']}>
 		<audio controls>
 			<source src={tracks[0].url} type="audio/mpeg" />
-			<source src={tracks[1].url} type="audio/mpeg" />
 			Your browser does not support the audio element.
 		</audio>
   </div>
