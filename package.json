@@ -88,20 +88,16 @@
   },
   "lint-staged": {
     "*.{js,css,json,md}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "src/**/*.{js,jsx}": [
-      "eslint --cache --fix",
-      "git add"
+      "eslint --cache --fix"
     ],
     "scripts/**/*.{js,jsx}": [
-      "eslint --cache --fix",
-      "git add"
+      "eslint --cache --fix"
     ],
     "*.css": [
-      "stylelint --fix",
-      "git add"
+      "stylelint --fix"
     ]
   },
   "repository": {
