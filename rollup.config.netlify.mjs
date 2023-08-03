@@ -3,11 +3,11 @@ import { string } from 'rollup-plugin-string'
 import analyze from 'rollup-plugin-analyzer'
 import commonjs from '@rollup/plugin-commonjs'
 import filesize from 'rollup-plugin-filesize'
-import json from '@rollup/plugin-json/dist'
+import json from '@rollup/plugin-json'
 import postcss from 'rollup-plugin-postcss'
 import progress from 'rollup-plugin-progress'
-import browsersync from 'rollup-plugin-browsersync'
 import html from 'rollup-plugin-html-scaffold'
+import { terser } from 'rollup-plugin-terser'
 import replace from '@rollup/plugin-replace'
 import copy from 'rollup-plugin-copy'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
@@ -66,20 +66,13 @@ const plugins = [
   filesize(),
   copy({
     targets: [
-      { src: 'src/assets', dest: 'build/' },
+      { src: 'assets', dest: 'build/' },
       { src: 'public/manifest.json', dest: 'build/' },
       { src: 'public/offline.html', dest: 'build/' },
     ],
     verbose: true,
   }),
-  browsersync({
-    server: 'build',
-    watch: true,
-    // port: 3000,
-    // ui: {
-    //   port: 3001,
-    // },
-  }),
+  terser(),
 ]
 
 export default {

@@ -1,25 +1,22 @@
-import { babel } from '@rollup/plugin-babel'
+// import { babel } from '@rollup/plugin-babel'
 import { string } from 'rollup-plugin-string'
 import analyze from 'rollup-plugin-analyzer'
 import commonjs from '@rollup/plugin-commonjs'
 import filesize from 'rollup-plugin-filesize'
-import json from '@rollup/plugin-json/dist'
+import json from '@rollup/plugin-json'
 import postcss from 'rollup-plugin-postcss'
 import progress from 'rollup-plugin-progress'
+import browsersync from 'rollup-plugin-browsersync'
+import html from 'rollup-plugin-html-scaffold'
 import replace from '@rollup/plugin-replace'
 import copy from 'rollup-plugin-copy'
-import html from 'rollup-plugin-html-scaffold'
-import { terser } from 'rollup-plugin-terser'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import ts from '@rollup/plugin-typescript'
 import typescript from 'typescript'
-import pkg from './package.json'
 
-const input = ['src/index.ts']
+const input = ['src/index-dev.tsx']
 
 const name = 'ReactComponents'
-
-const external = ['react', 'react-dom', 'prop-types', 'classnames']
 
 const globals = {
   react: 'React',
@@ -28,20 +25,17 @@ const globals = {
   'prop-types': 'PropTypes',
 }
 
-const [debugArg] = process.argv.filter((item) => item === '--config-debug=true')
-const isInDebugMode = Boolean(debugArg)
-
 const plugins = [
   progress(),
   html({
     input: './public/index.html',
-    output: './dist/index.html',
+    output: './build/index.html',
     template: { appBundle: 'index.js' },
   }),
   replace({
     preventAssignment: true,
     values: {
-      'process.env.NODE_ENV': JSON.stringify('production'),
+      'process.env.NODE_ENV': JSON.stringify('development'),
       'process.env.APP_ASSETS_URL': JSON.stringify(process.env.APP_ASSETS_URL),
     },
   }),
@@ -63,49 +57,40 @@ const plugins = [
   commonjs({
     include: 'node_modules/**',
   }),
-  babel({
-    babelHelpers: 'bundled',
-    exclude: 'node_modules/**',
-    presets: ['@babel/env', '@babel/preset-react'],
-  }),
-  !isInDebugMode && terser(),
+  // babel({
+  //   babelHelpers: 'bundled',
+  //   exclude: 'node_modules/**',
+  //   presets: ['@babel/env', '@babel/preset-react'],
+  // }),
+  analyze(),
+  filesize(),
   copy({
     targets: [
-      { src: 'assets', dest: 'dist/' },
-      { src: 'public/manifest.json', dest: 'dist/' },
-      { src: 'public/offline.html', dest: 'dist/' },
+      { src: 'src/assets', dest: 'build/' },
+      { src: 'public/manifest.json', dest: 'build/' },
+      { src: 'public/offline.html', dest: 'build/' },
     ],
     verbose: true,
   }),
-  analyze(),
-  filesize(),
+  browsersync({
+    server: 'build',
+    watch: true,
+    ui: false,
+    open: false,
+    // port: 3000,
+    // ui: {
+    //   port: 3001,
+    // },
+  }),
 ]
 
-const outputData = [
-  {
-    file: pkg.browser,
-    format: 'umd',
-  },
-  {
-    file: pkg.main,
-    format: 'cjs',
-  },
-  {
-    file: pkg.module,
-    format: 'es',
-  },
-]
-
-const config = outputData.map(({ file, format }) => ({
+export default {
   input,
   output: {
-    file,
-    format,
+    file: 'build/index.js',
+    format: 'umd',
     name,
     globals,
   },
-  external,
   plugins,
-}))
-
-export default config
+}
