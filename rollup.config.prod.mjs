@@ -13,13 +13,16 @@ import { terser } from 'rollup-plugin-terser'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import ts from '@rollup/plugin-typescript'
 import typescript from 'typescript'
-import pkg from './package.json'
+import pkg from './package.json' assert { type: 'json' }
 
 const input = ['src/index.ts']
 
 const name = 'ReactComponents'
 
-const external = ['react', 'react-dom', 'prop-types', 'classnames']
+const external = [
+  ...Object.keys(pkg.peerDependencies ?? {}),
+  ...Object.keys(pkg.dependencies ?? {}),
+]
 
 const globals = {
   react: 'React',

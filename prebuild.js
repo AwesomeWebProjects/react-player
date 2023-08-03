@@ -1,5 +1,5 @@
 const fs = require('fs')
-const rimraf = require('rimraf')
+const { rimraf } = require('rimraf')
 
 const args = process.argv.slice(2)
 const parameters = args.reduce((acc, arg) => {
@@ -22,7 +22,7 @@ log(`Building for env: ${parameters.env}`)
 
 // check if directory exists
 if (fs.existsSync(dir)) {
-  rimraf(dir, function () {
+  rimraf(dir).then(() => {
     fs.mkdirSync(dir)
   })
 } else {
