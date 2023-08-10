@@ -1,24 +1,36 @@
 import { useState, createContext, ReactNode, useContext } from "react";
 import type {
-    AppContextType,
+  IAppContextData,
+  IAppContextApi
 } from './AppContextTypes';
-import PropTypes from "prop-types";
 
-export const AppContext = createContext({} as AppContextType)
+export const AppContextData = createContext({} as IAppContextData)
+export const AppContextApi = createContext({} as IAppContextApi)
 
-export function useAppGlobalState() {
-    const context = useContext(AppContext)
+export function useAppGlobalStateData(): IAppContextData {
+  const context = useContext(AppContextData)
 
-    if (!context) {
-        throw new Error(
-            'useAppGlobalState must be used within a AppGlobalStateProvider'
-        )
-    }
+  if (!context) {
+    throw new Error(
+      "useAppGlobalStateData must be used within a AppGlobalStateProvider"
+    )
+  }
 
-    return context
+  return context
+}
+export function useAppGlobalStateApi(): IAppContextApi {
+  const context = useContext(AppContextApi)
+
+  if (!context) {
+    throw new Error(
+      "useAppGlobalStateApi must be used within a AppGlobalStateProvider"
+    )
+  }
+
+  return context
 }
 
-export const AppGlobalStateProvider = ({ children }: { children: ReactNode }): AppContextType => {
+export const AppGlobalStateProvider = ({ children }: { children: ReactNode }) => {
   /**
    * Audio Context
    */
@@ -28,6 +40,7 @@ export const AppGlobalStateProvider = ({ children }: { children: ReactNode }): A
   const [analyser, setAnalyser] = useState(null);
   const [gainNode, setGainNode] = useState(null);
   const [currentSource, setCurrentSource] = useState(null);
+  const [currentBuffer, setCurrentBuffer] = useState(null);
   const [bufferLength, setBufferLength] = useState(null);
   const [duration, setDuration] = useState(0);
   const [tracks, setTracks] = useState([]);
@@ -104,77 +117,81 @@ export const AppGlobalStateProvider = ({ children }: { children: ReactNode }): A
 
   // @ts-ignore
   return (
-    <AppContext.Provider
+    <AppContextData.Provider
+    value={{
+        // context
+        threadInUse,
+        audioContext,
+        analyser,
+        gainNode,
+        currentSource,
+        currentBuffer,
+        bufferLength,
+        duration,
+        tracks,
+        musicIndex,
+        playing,
+        javascriptNode,
+        firstPlay,
+        audioContextCreatedTime,
+        audioLoadOffsetTime,
+        audioCurrentTime,
+        updatedVolume,
+        isLoadingSong,
+        isLoadingFullSong,
+        canLoadFullSong,
+        playingFullMusic,
+        audioStreamData,
+        trackerEnabled,
+        // canvas
+        canvas,
+        canvasContext,
+        canvasWidth,
+        canvasHeight,
+        canvasScaleCoef,
+        canvasCx,
+        canvasCy,
+        canvasCoord,
+        canvasFirstDraw,
+        canvasResized,
+        // framer
+        framerTransformScale,
+        framerCountTicks,
+        framerFrequencyData,
+        framerTickSize,
+        framerPI,
+        framerIndex,
+        framerLoadingAngle,
+        framerMaxTickSize,
+        framerTicks,
+        // scene
+        scenePadding,
+        sceneMinSize,
+        sceneOptimiseHeight,
+        sceneInProcess,
+        sceneRadius,
+        // tracker
+        trackerInnerDelta,
+        trackerLineWidth,
+        trackerPrevAngle,
+        trackerAngle,
+        trackerAnimationCount,
+        trackerPressButton,
+        trackerAnimatedInProgress,
+        trackerAnimateId,
+        trackerR,
+        // controls
+        timeControl,
+    }}
+  >
+    <AppContextApi.Provider
       value={{
-        state: {
-          // context
-          threadInUse,
-          audioContext,
-          analyser,
-          gainNode,
-          currentSource,
-          bufferLength,
-          duration,
-          tracks,
-          musicIndex,
-          playing,
-          javascriptNode,
-          firstPlay,
-          audioContextCreatedTime,
-          audioLoadOffsetTime,
-          audioCurrentTime,
-          updatedVolume,
-          isLoadingSong,
-          isLoadingFullSong,
-          canLoadFullSong,
-          playingFullMusic,
-          audioStreamData,
-          trackerEnabled,
-          // canvas
-          canvas,
-          canvasContext,
-          canvasWidth,
-          canvasHeight,
-          canvasScaleCoef,
-          canvasCx,
-          canvasCy,
-          canvasCoord,
-          canvasFirstDraw,
-          canvasResized,
-          // framer
-          framerTransformScale,
-          framerCountTicks,
-          framerFrequencyData,
-          framerTickSize,
-          framerPI,
-          framerIndex,
-          framerLoadingAngle,
-          framerMaxTickSize,
-          framerTicks,
-          // scene
-          scenePadding,
-          sceneMinSize,
-          sceneOptimiseHeight,
-          sceneInProcess,
-          sceneRadius,
-          // tracker
-          trackerInnerDelta,
-          trackerLineWidth,
-          trackerPrevAngle,
-          trackerAngle,
-          trackerAnimationCount,
-          trackerPressButton,
-          trackerAnimatedInProgress,
-          trackerAnimateId,
-          trackerR,
-          // controls
-          timeControl,
-        },
         // set context
         setThreadInUse,
         setAudioContext,
         setAnalyser,
         setGainNode,
+        setCurrentBuffer,
         setCurrentSource,
         setBufferLength,
         setDuration,
@@ -235,10 +252,7 @@ export const AppGlobalStateProvider = ({ children }: { children: ReactNode }): A
       }}
     >
       {children}
-    </AppContext.Provider>
+    </AppContextApi.Provider>
+  </AppContextData.Provider>
   );
-};
-
-AppGlobalStateProvider.propTypes = {
-  children: PropTypes.node.isRequired,
 };
