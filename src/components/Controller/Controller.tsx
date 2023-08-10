@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react'
-import type { IController } from './ControllerTypes'
-import {  useAppGlobalStateApi, useAppGlobalStateData } from '../../contexts/AppContext'
 import classNames from 'classnames'
+import type { IController } from './ControllerTypes'
+import { useAppGlobalStateApi, useAppGlobalStateData } from '../../contexts/AppContext'
 import { Player } from '../Player'
 
 const tracks = [
@@ -28,8 +28,24 @@ const tracks = [
 ]
 
 const Controller = ({ className, ...rest }: IController) => {
-  const { setAudioContext, setCurrentSource, setAnalyser, setGainNode, setCurrentBuffer, setPlaying } = useAppGlobalStateApi()
-  const { audioContext, analyser, gainNode, javascriptNode, currentSource, updatedVolume, currentBuffer, playing } = useAppGlobalStateData()
+  const {
+    setAudioContext,
+    setCurrentSource,
+    setAnalyser,
+    setGainNode,
+    setCurrentBuffer,
+    setPlaying,
+  } = useAppGlobalStateApi()
+  const {
+    audioContext,
+    analyser,
+    gainNode,
+    javascriptNode,
+    currentSource,
+    updatedVolume,
+    currentBuffer,
+    playing,
+  } = useAppGlobalStateData()
   const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
@@ -48,10 +64,16 @@ const Controller = ({ className, ...rest }: IController) => {
     }
   }, [currentBuffer])
 
-  const readAudioStream = (response: Response, contentLength: string | null, params?: {
-     all: boolean, sec: number, amount: number
-  }) => {
-    const total = parseInt((contentLength as string), 10)
+  const readAudioStream = (
+    response: Response,
+    contentLength: string | null,
+    params?: {
+      all: boolean
+      sec: number
+      amount: number
+    },
+  ) => {
+    const total = parseInt(contentLength as string, 10)
     let loaded = 0
     const startedStream: any = new Date()
 
@@ -63,52 +85,59 @@ const Controller = ({ className, ...rest }: IController) => {
 
         const reader: ReadableStreamDefaultReader = response.body.getReader()
         const read = () => {
-          reader.read().then(({ done, value }) => {
-
-            if (params && !params.all) {
-              if (params.amount) {
-                if (params.amount < total && loaded >= params.amount) {
-                  console.log(`Close stream frag - amount`)
-                  reader.releaseLock()
-                  controller.close()
-                  return
-                } else if (loaded >= (65536 * 5)) { // 327.680
-                  console.log(`Close stream frag - amount`)
-                  reader.releaseLock()
-                  controller.close()
-                  return
-                }
-              } else {
-                const startedStreamTime = ((new Date() as any - startedStream) / 1000)
+          reader
+            .read()
+            .then(({ done, value }) => {
+              if (params && !params.all) {
+                if (params.amount) {
+                  if (params.amount < total && loaded >= params.amount) {
+                    console.log(`Close stream frag - amount`)
+                    reader.releaseLock()
+                    controller.close()
+                    return
+                  }
+                  if (loaded >= 65536 * 5) {
+                    // 327.680
+                    console.log(`Close stream frag - amount`)
+                    reader.releaseLock()
+                    controller.close()
+                    return
+                  }
+                } else {
+                  const startedStreamTime = ((new Date() as any) - startedStream) / 1000
                   if (startedStreamTime >= (params.sec || 5)) {
                     console.log(`Close stream frag - time`)
                     reader.releaseLock()
                     controller.close()
                     return
                   }
+                }
               }
-            }
-            if (done) {
-              console.log(`Close stream done`)
-              // that.setState({ playingFullMusic: true })
-              reader.releaseLock()
-              controller.close()
-              return
-            }
+              if (done) {
+                console.log(`Close stream done`)
+                // that.setState({ playingFullMusic: true })
+                reader.releaseLock()
+                controller.close()
+                return
+              }
 
-            loaded += value.byteLength
-            console.log({ loaded, total, percent: `${((loaded * 100) / total).toFixed(2)}%` }, (new Date() as any - startedStream) / 1000)
-            controller.enqueue(value)
+              loaded += value.byteLength
+              console.log(
+                { loaded, total, percent: `${((loaded * 100) / total).toFixed(2)}%` },
+                ((new Date() as any) - startedStream) / 1000,
+              )
+              controller.enqueue(value)
 
-            read()
-          }).catch((error: any) => {
-            console.error(error)
-            controller.error(error)
-          })
+              read()
+            })
+            .catch((error: any) => {
+              console.error(error)
+              controller.error(error)
+            })
         }
 
         read()
-      }
+      },
     })
 
     return stream
@@ -136,16 +165,18 @@ const Controller = ({ className, ...rest }: IController) => {
       contentLength: response.headers.get('content-length'),
     }
 
-    const stream = readAudioStream(audioStreamData.response, audioStreamData.contentLength, { all: true, sec: 1, amount: 1050478 })
+    const stream = readAudioStream(audioStreamData.response, audioStreamData.contentLength, {
+      all: true,
+      sec: 1,
+      amount: 1050478,
+    })
     const streamAsResponse = new Response(stream)
     const audioBuffer = await streamAsResponse.arrayBuffer()
 
     console.log(audioContext)
 
     audioContext.decodeAudioData(audioBuffer, (buffer: Buffer) => {
-
       currentSource.buffer = buffer
-
 
       setCurrentBuffer(buffer)
 
@@ -164,22 +195,22 @@ const Controller = ({ className, ...rest }: IController) => {
     // deprecated - need use audio worklet
     // javascriptNode.connect(audioContext.destination)
 
-        // Set the start volume to 100%. // 50% = 0.5
-        if (gainNode && !updatedVolume) {
-          gainNode.gain.value = 1
-        }
+    // Set the start volume to 100%. // 50% = 0.5
+    if (gainNode && !updatedVolume) {
+      gainNode.gain.value = 1
+    }
 
-        if (when && offset) {
-          source.start(when, offset)
-        } else {
-          source.start(0)
-        }
+    if (when && offset) {
+      source.start(when, offset)
+    } else {
+      source.start(0)
+    }
 
-        if (audioContext.state === 'suspended') {
-          audioContext.resume()
-        }
+    if (audioContext.state === 'suspended') {
+      audioContext.resume()
+    }
 
-        setPlaying(true)
+    setPlaying(true)
   }
 
   const initialize = async () => {
@@ -204,20 +235,18 @@ const Controller = ({ className, ...rest }: IController) => {
   }
 
   useEffect(() => {
-    if (typeof window !== 'undefined'){
+    if (typeof window !== 'undefined') {
       window.addEventListener('initialize', initialize)
     }
 
     return () => {
-    if (typeof window !== 'undefined'){
-      window.removeEventListener('initialize', initialize)
-    }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('initialize', initialize)
+      }
     }
   }, [])
 
-  return (
-      <Player />
-  )
+  return <Player />
 }
 
 export default memo(Controller)

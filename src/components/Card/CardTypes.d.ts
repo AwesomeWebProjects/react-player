@@ -5,4 +5,3 @@ export interface Card {
   element?: ElementType
   children: Element | ElementType | ReactNode
 }
-

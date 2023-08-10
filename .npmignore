@@ -1,0 +1,42 @@
+// system file
+*.log
+.DS_Store*
+.idea/
+
+// specific files
+node_modules/
+example/
+example-v5/
+build/
+test/
+bin/
+CHANGELOG.md
+src/
+docs/
+public/
+coverage/
+
+// setting files
+.babelrc
+.travis.yml
+.editorconfig
+
+// misc folders
+.vscode/
+.husky/
+.github/
+rollup-plugins/
+
+// misc files
+bundlesize.config.json
+prebuild.js
+jest.config.ts
+
+// bundler - rollup
+rollup.config.dev.js
+rollup.config.prod.js
+rollup.config.types.js
+
+// bundler - esbuild
+esbuild.config.dev.mjs
+esbuild.config.prod.mjs
