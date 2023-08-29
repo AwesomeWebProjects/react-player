@@ -1,5 +1,3 @@
-import { ReactNode, SetStateAction } from 'react'
-
 export interface IAppContextData {
   // context
   threadInUse
@@ -64,6 +62,8 @@ export interface IAppContextData {
   trackerR
   // controls
   timeControl
+  // others
+  hasStreamSupport
 }
 export interface IAppContextApi {
   // set context

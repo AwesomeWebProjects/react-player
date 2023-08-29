@@ -1,4 +1,4 @@
-import { useState, createContext, ReactNode, useContext } from 'react'
+import { useState, createContext, ReactNode, useContext, useMemo } from 'react'
 import type { IAppContextData, IAppContextApi } from './AppContextTypes'
 
 export const AppContextData = createContext({} as IAppContextData)
@@ -50,7 +50,12 @@ export const AppGlobalStateProvider = ({ children }: { children: ReactNode }) =>
   const [canLoadFullSong, setCanLoadFullSong] = useState(true)
   const [playingFullMusic, setPlayingFullMusic] = useState(false)
   const [audioStreamData, setAudioStreamData] = useState(null)
-  const [trackerEnabled, setTrackerEnabled] = useState(false) // @NOTE: tracker disabled until solve the thing of re-read stream data and not re-set the position of tracker
+  // @NOTE: tracker disabled - need to re-read stream data and not re-set the position of tracker
+  const [trackerEnabled, setTrackerEnabled] = useState(false)
+
+  // @NOTE: need to check if this should be in a state to prevent hydration error on SSR
+  const hasStreamSupport =
+    typeof window !== 'undefined' && !!window.fetch && !!window.ReadableStream
 
   /**
    * Canvas Context
@@ -108,144 +113,277 @@ export const AppGlobalStateProvider = ({ children }: { children: ReactNode }) =>
     textContent: '00:00',
   })
 
+  const memoizedDataValue = useMemo(
+    () => ({
+      // context
+      threadInUse,
+      audioContext,
+      analyser,
+      gainNode,
+      currentSource,
+      currentBuffer,
+      bufferLength,
+      duration,
+      tracks,
+      musicIndex,
+      playing,
+      javascriptNode,
+      firstPlay,
+      audioContextCreatedTime,
+      audioLoadOffsetTime,
+      audioCurrentTime,
+      updatedVolume,
+      isLoadingSong,
+      isLoadingFullSong,
+      canLoadFullSong,
+      playingFullMusic,
+      audioStreamData,
+      trackerEnabled,
+      // canvas
+      canvas,
+      canvasContext,
+      canvasWidth,
+      canvasHeight,
+      canvasScaleCoef,
+      canvasCx,
+      canvasCy,
+      canvasCoord,
+      canvasFirstDraw,
+      canvasResized,
+      // framer
+      framerTransformScale,
+      framerCountTicks,
+      framerFrequencyData,
+      framerTickSize,
+      framerPI,
+      framerIndex,
+      framerLoadingAngle,
+      framerMaxTickSize,
+      framerTicks,
+      // scene
+      scenePadding,
+      sceneMinSize,
+      sceneOptimiseHeight,
+      sceneInProcess,
+      sceneRadius,
+      // tracker
+      trackerInnerDelta,
+      trackerLineWidth,
+      trackerPrevAngle,
+      trackerAngle,
+      trackerAnimationCount,
+      trackerPressButton,
+      trackerAnimatedInProgress,
+      trackerAnimateId,
+      trackerR,
+      // controls
+      timeControl,
+      hasStreamSupport,
+    }),
+    [
+      // context
+      threadInUse,
+      audioContext,
+      analyser,
+      gainNode,
+      currentSource,
+      currentBuffer,
+      bufferLength,
+      duration,
+      tracks,
+      musicIndex,
+      playing,
+      javascriptNode,
+      firstPlay,
+      audioContextCreatedTime,
+      audioLoadOffsetTime,
+      audioCurrentTime,
+      updatedVolume,
+      isLoadingSong,
+      isLoadingFullSong,
+      canLoadFullSong,
+      playingFullMusic,
+      audioStreamData,
+      trackerEnabled,
+      // canvas
+      canvas,
+      canvasContext,
+      canvasWidth,
+      canvasHeight,
+      canvasScaleCoef,
+      canvasCx,
+      canvasCy,
+      canvasCoord,
+      canvasFirstDraw,
+      canvasResized,
+      // framer
+      framerTransformScale,
+      framerCountTicks,
+      framerFrequencyData,
+      framerTickSize,
+      framerPI,
+      framerIndex,
+      framerLoadingAngle,
+      framerMaxTickSize,
+      framerTicks,
+      // scene
+      scenePadding,
+      sceneMinSize,
+      sceneOptimiseHeight,
+      sceneInProcess,
+      sceneRadius,
+      // tracker
+      trackerInnerDelta,
+      trackerLineWidth,
+      trackerPrevAngle,
+      trackerAngle,
+      trackerAnimationCount,
+      trackerPressButton,
+      trackerAnimatedInProgress,
+      trackerAnimateId,
+      trackerR,
+      // controls
+      timeControl,
+    ],
+  )
+
+  const memoizedApiValue = useMemo(
+    () => ({
+      // set context
+      setThreadInUse,
+      setAudioContext,
+      setAnalyser,
+      setGainNode,
+      setCurrentBuffer,
+      setCurrentSource,
+      setBufferLength,
+      setDuration,
+      setTracks,
+      setMusicIndex,
+      setPlaying,
+      setJavascriptNode,
+      setFirstPlay,
+      setAudioContextCreatedTime,
+      setAudioLoadOffsetTime,
+      setAudioCurrentTime,
+      setUpdatedVolume,
+      setIsLoadingSong,
+      setIsLoadingFullSong,
+      setCanLoadFullSong,
+      setPlayingFullMusic,
+      setAudioStreamData,
+      setTrackerEnabled,
+      // set canvas
+      setCanvas,
+      setCanvasContext,
+      setCanvasWidth,
+      setCanvasHeight,
+      setCanvasScaleCoef,
+      setCanvasCx,
+      setCanvasCy,
+      setCanvasCoord,
+      setCanvasFirstDraw,
+      setCanvasResized,
+      // set framer
+      setFramerTransformScale,
+      setFramerCountTicks,
+      setFramerFrequencyData,
+      setFramerTickSize,
+      setFramerPI,
+      setFramerIndex,
+      setFramerLoadingAngle,
+      setFramerMaxTickSize,
+      setFramerTicks,
+      // scene
+      setScenePadding,
+      setSceneMinSize,
+      setSceneOptimiseHeight,
+      setSceneInProcess,
+      setSceneRadius,
+      // tracker
+      setTrackerInnerDelta,
+      setTrackerLineWidth,
+      setTrackerPrevAngle,
+      setTrackerAngle,
+      setTrackerAnimationCount,
+      setTrackerPressButton,
+      setTrackerAnimatedInProgress,
+      setTrackerAnimateId,
+      setTrackerR,
+      // controls
+      setTimeControl,
+    }),
+    [
+      // set context
+      setThreadInUse,
+      setAudioContext,
+      setAnalyser,
+      setGainNode,
+      setCurrentBuffer,
+      setCurrentSource,
+      setBufferLength,
+      setDuration,
+      setTracks,
+      setMusicIndex,
+      setPlaying,
+      setJavascriptNode,
+      setFirstPlay,
+      setAudioContextCreatedTime,
+      setAudioLoadOffsetTime,
+      setAudioCurrentTime,
+      setUpdatedVolume,
+      setIsLoadingSong,
+      setIsLoadingFullSong,
+      setCanLoadFullSong,
+      setPlayingFullMusic,
+      setAudioStreamData,
+      setTrackerEnabled,
+      // set canvas
+      setCanvas,
+      setCanvasContext,
+      setCanvasWidth,
+      setCanvasHeight,
+      setCanvasScaleCoef,
+      setCanvasCx,
+      setCanvasCy,
+      setCanvasCoord,
+      setCanvasFirstDraw,
+      setCanvasResized,
+      // set framer
+      setFramerTransformScale,
+      setFramerCountTicks,
+      setFramerFrequencyData,
+      setFramerTickSize,
+      setFramerPI,
+      setFramerIndex,
+      setFramerLoadingAngle,
+      setFramerMaxTickSize,
+      setFramerTicks,
+      // scene
+      setScenePadding,
+      setSceneMinSize,
+      setSceneOptimiseHeight,
+      setSceneInProcess,
+      setSceneRadius,
+      // tracker
+      setTrackerInnerDelta,
+      setTrackerLineWidth,
+      setTrackerPrevAngle,
+      setTrackerAngle,
+      setTrackerAnimationCount,
+      setTrackerPressButton,
+      setTrackerAnimatedInProgress,
+      setTrackerAnimateId,
+      setTrackerR,
+      // controls
+      setTimeControl,
+    ],
+  )
+
   // @ts-ignore
   return (
-    <AppContextData.Provider
-      value={{
-        // context
-        threadInUse,
-        audioContext,
-        analyser,
-        gainNode,
-        currentSource,
-        currentBuffer,
-        bufferLength,
-        duration,
-        tracks,
-        musicIndex,
-        playing,
-        javascriptNode,
-        firstPlay,
-        audioContextCreatedTime,
-        audioLoadOffsetTime,
-        audioCurrentTime,
-        updatedVolume,
-        isLoadingSong,
-        isLoadingFullSong,
-        canLoadFullSong,
-        playingFullMusic,
-        audioStreamData,
-        trackerEnabled,
-        // canvas
-        canvas,
-        canvasContext,
-        canvasWidth,
-        canvasHeight,
-        canvasScaleCoef,
-        canvasCx,
-        canvasCy,
-        canvasCoord,
-        canvasFirstDraw,
-        canvasResized,
-        // framer
-        framerTransformScale,
-        framerCountTicks,
-        framerFrequencyData,
-        framerTickSize,
-        framerPI,
-        framerIndex,
-        framerLoadingAngle,
-        framerMaxTickSize,
-        framerTicks,
-        // scene
-        scenePadding,
-        sceneMinSize,
-        sceneOptimiseHeight,
-        sceneInProcess,
-        sceneRadius,
-        // tracker
-        trackerInnerDelta,
-        trackerLineWidth,
-        trackerPrevAngle,
-        trackerAngle,
-        trackerAnimationCount,
-        trackerPressButton,
-        trackerAnimatedInProgress,
-        trackerAnimateId,
-        trackerR,
-        // controls
-        timeControl,
-      }}
-    >
-      <AppContextApi.Provider
-        value={{
-          // set context
-          setThreadInUse,
-          setAudioContext,
-          setAnalyser,
-          setGainNode,
-          setCurrentBuffer,
-          setCurrentSource,
-          setBufferLength,
-          setDuration,
-          setTracks,
-          setMusicIndex,
-          setPlaying,
-          setJavascriptNode,
-          setFirstPlay,
-          setAudioContextCreatedTime,
-          setAudioLoadOffsetTime,
-          setAudioCurrentTime,
-          setUpdatedVolume,
-          setIsLoadingSong,
-          setIsLoadingFullSong,
-          setCanLoadFullSong,
-          setPlayingFullMusic,
-          setAudioStreamData,
-          setTrackerEnabled,
-          // set canvas
-          setCanvas,
-          setCanvasContext,
-          setCanvasWidth,
-          setCanvasHeight,
-          setCanvasScaleCoef,
-          setCanvasCx,
-          setCanvasCy,
-          setCanvasCoord,
-          setCanvasFirstDraw,
-          setCanvasResized,
-          // set framer
-          setFramerTransformScale,
-          setFramerCountTicks,
-          setFramerFrequencyData,
-          setFramerTickSize,
-          setFramerPI,
-          setFramerIndex,
-          setFramerLoadingAngle,
-          setFramerMaxTickSize,
-          setFramerTicks,
-          // scene
-          setScenePadding,
-          setSceneMinSize,
-          setSceneOptimiseHeight,
-          setSceneInProcess,
-          setSceneRadius,
-          // tracker
-          setTrackerInnerDelta,
-          setTrackerLineWidth,
-          setTrackerPrevAngle,
-          setTrackerAngle,
-          setTrackerAnimationCount,
-          setTrackerPressButton,
-          setTrackerAnimatedInProgress,
-          setTrackerAnimateId,
-          setTrackerR,
-          // controls
-          setTimeControl,
-        }}
-      >
-        {children}
-      </AppContextApi.Provider>
+    <AppContextData.Provider value={memoizedDataValue}>
+      <AppContextApi.Provider value={memoizedApiValue}>{children}</AppContextApi.Provider>
     </AppContextData.Provider>
   )
 }
