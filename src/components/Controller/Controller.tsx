@@ -61,6 +61,11 @@ const Controller = ({ className, ...rest }: IController) => {
     audioLoadOffsetTime,
     audioContextCreatedTime,
     timeControl,
+    playing,
+    playingFullMusic,
+    threadInUse,
+    isLoadingFullSong,
+    hasStreamSupport,
   } = useAppGlobalStateData()
   const [initialized, setInitialized] = useState(false)
 
@@ -178,10 +183,13 @@ const Controller = ({ className, ...rest }: IController) => {
     const streamAsResponse = new Response(stream)
     const audioBuffer = await streamAsResponse.arrayBuffer()
 
+    const newCurrentSource = audioContext.createBufferSource()
+
     audioContext.decodeAudioData(audioBuffer, (buffer: Buffer) => {
-      currentSource.buffer = buffer
+      newCurrentSource.buffer = buffer
 
       setCurrentBuffer(buffer)
+      setCurrentSource(newCurrentSource)
     })
   }
 
@@ -342,8 +350,9 @@ const Controller = ({ className, ...rest }: IController) => {
     setPlayingFullMusic(false)
     setCanLoadFullSong(true)
 
+    console.log('loading new song')
     // @TODO: maybe add this into a useEffect
-    isLoadingSong(tracks[musicIdx].url)
+    loadSong(tracks[musicIdx].url)
   }
 
   const suspendSong = () => {
@@ -357,7 +366,7 @@ const Controller = ({ className, ...rest }: IController) => {
 
       setFirstPlay(false)
 
-      window.dispatchEvent(new CustomEvent('react_player__initialize'))
+      window.dispatchEvent(new CustomEvent('react_player--initialize'))
     } else {
       audioContext.resume()
       setPlaying(true)
@@ -365,6 +374,7 @@ const Controller = ({ className, ...rest }: IController) => {
   }
 
   const nextSong = () => {
+    console.log('next song - current index: ', musicIndex, 'first play: ', firstPlay)
     let newMusicIndex = musicIndex
 
     if (musicIndex >= tracks.length - 1) {
@@ -373,16 +383,16 @@ const Controller = ({ className, ...rest }: IController) => {
       newMusicIndex += 1
     }
 
-    if (firstPlay) {
-      setIsLoadingSong(true)
-      setMusicIndex(newMusicIndex)
-      setFirstPlay(false)
+    // if (firstPlay) {
+    setIsLoadingSong(true)
+    setMusicIndex(newMusicIndex)
+    //   setFirstPlay(false)
 
-      window.dispatchEvent(new CustomEvent('react_player__initialize'))
-    } else {
-      audioContext.suspend()
-      switchSong(musicIndex)
-    }
+    //   // window.dispatchEvent(new CustomEvent('react_player--initialize'))
+    // } else {
+    audioContext.suspend()
+    switchSong(musicIndex)
+    // }
   }
 
   const prevSong = () => {
@@ -399,10 +409,40 @@ const Controller = ({ className, ...rest }: IController) => {
       setMusicIndex(newMusicIndex)
       setFirstPlay(false)
 
-      window.dispatchEvent(new CustomEvent('react_player__initialize'))
+      window.dispatchEvent(new CustomEvent('react_player--initialize'))
     } else {
       audioContext.suspend()
       switchSong(newMusicIndex)
+    }
+  }
+
+  const songContextHandler = () => {
+    if (audioContext && audioContext.state !== 'suspended' && currentSource) {
+      let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
+      const currentDuration = currentSource.buffer.duration
+
+      // console.log({playingFullMusic, canLoadFullSong, isLoadingFullSong})
+
+      if (
+        audioCurrentTime >= currentDuration - 3.5 &&
+        !playingFullMusic &&
+        hasStreamSupport &&
+        !isLoadingFullSong &&
+        canLoadFullSong
+      ) {
+        setIsLoadingFullSong(true)
+        if (threadInUse === 'main') {
+          preLoadCompleteSong()
+        } else if (threadInUse === 'worker') {
+          console.log('worker')
+          // this.audioWorker.postMessage({ type: 'preload', data: { playingFullMusic, all: true } })
+        }
+      } else {
+        console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)
+        if (playingFullMusic && audioCurrentTime >= currentDuration - 1.5 && !isLoadingFullSong) {
+          nextSong()
+        }
+      }
     }
   }
 
@@ -426,24 +466,41 @@ const Controller = ({ className, ...rest }: IController) => {
   }, [currentBuffer])
 
   useEffect(() => {
+    let ticker: any = null
+
+    if (playing) {
+      ticker = setInterval(() => {
+        timeHandler()
+        songContextHandler()
+      }, 300)
+    }
+
+    return () => {
+      if (ticker) {
+        clearInterval(ticker)
+      }
+    }
+  }, [playing])
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
-      window.addEventListener('react_player__initialize', initialize)
-      window.addEventListener('react_player__next_song', nextSong)
-      window.addEventListener('react_player__previous_song', prevSong)
-      window.addEventListener('react_player__suspend_song', suspendSong)
-      window.addEventListener('react_player__resume_song', resumeSong)
+      window.addEventListener('react_player--initialize', initialize)
+      window.addEventListener('react_player--next_song', nextSong)
+      window.addEventListener('react_player--previous_song', prevSong)
+      window.addEventListener('react_player--suspend_song', suspendSong)
+      window.addEventListener('react_player--resume_song', resumeSong)
     }
 
     return () => {
       if (typeof window !== 'undefined') {
-        window.removeEventListener('react_player__initialize', initialize)
-        window.removeEventListener('react_player__next_song', nextSong)
-        window.removeEventListener('react_player__previous_song', prevSong)
-        window.removeEventListener('react_player__suspend_song', suspendSong)
-        window.removeEventListener('react_player__resume_song', resumeSong)
+        window.removeEventListener('react_player--initialize', initialize)
+        window.removeEventListener('react_player--next_song', nextSong)
+        window.removeEventListener('react_player--previous_song', prevSong)
+        window.removeEventListener('react_player--suspend_song', suspendSong)
+        window.removeEventListener('react_player--resume_song', resumeSong)
       }
     }
-  }, [])
+  }, [audioContext])
 
   return <Player />
 }

@@ -82,35 +82,6 @@ const Player = ({ className, ...rest }: Player) => {
     sceneRender()
   }
 
-  const songContextHandler = () => {
-    if (audioContext && audioContext.state !== 'suspended' && currentSource) {
-      let audioCurrentTime = audioContext.currentTime - audioLoadOffsetTime
-      const currentDuration = currentSource.buffer.duration
-
-      // console.log({playingFullMusic, canLoadFullSong, isLoadingFullSong})
-
-      if (
-        audioCurrentTime >= currentDuration - 3.5 &&
-        !playingFullMusic &&
-        hasStreamSupport &&
-        !isLoadingFullSong &&
-        canLoadFullSong
-      ) {
-        setIsLoadingFullSong(true)
-        if (threadInUse === 'main') {
-          // preLoadCompleteSong()
-        } else if (threadInUse === 'worker') {
-          // this.audioWorker.postMessage({ type: 'preload', data: { playingFullMusic, all: true } })
-        }
-      } else {
-        // console.log(audioCurrentTime, currentDuration, audioCurrentTime >= currentDuration)
-        if (playingFullMusic && audioCurrentTime >= currentDuration - 1.5 && !isLoadingFullSong) {
-          nextSong()
-        }
-      }
-    }
-  }
-
   const sceneInit = () => {
     framerInit()
     // @TODO: implement it
@@ -159,10 +130,24 @@ const Player = ({ className, ...rest }: Player) => {
       <canvas ref={canvasRef} className={styles['player-canvas']} id="Player-canvas" />
       <button
         onClick={() => {
-          window.dispatchEvent(new CustomEvent('react_player__initialize'))
+          window.dispatchEvent(new CustomEvent('react_player--previous_song'))
+        }}
+      >
+        Previous
+      </button>
+      <button
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent('react_player--initialize'))
         }}
       >
         Play
+      </button>
+      <button
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent('react_player--next_song'))
+        }}
+      >
+        Next
       </button>
     </div>
   )
