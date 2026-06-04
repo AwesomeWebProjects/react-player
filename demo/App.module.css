@@ -1,0 +1,37 @@
+.app {
+  position: relative;
+  min-height: 100vh;
+}
+
+.footer {
+  position: fixed;
+  bottom: 1rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-family: monospace;
+  z-index: 10;
+}
+
+.shortcuts span {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.github {
+  color: rgba(97, 218, 251, 0.8);
+  text-decoration: none;
+}
+
+.github:hover {
+  text-decoration: underline;
+}
+
+.version {
+  color: rgba(255, 255, 255, 0.4);
+}

@@ -1,82 +1,98 @@
-<p align="center">
-  <img id="awesome-audio-visualization" src="https://github.com/willianjusten/awesome-audio-visualization/blob/master/logo-aav.gif?raw=true" alt="Logo AAV">
-</p>
+# @awesome-web-projects/react-player
 
-This project are listed on [Awesome Audio Visualization - WillianJusten](https://github.com/willianjusten/awesome-audio-visualization)
+A React audio player component with circular frequency visualization powered by the Web Audio API and Canvas.
 
-----
+Listed on [Awesome Audio Visualization](https://github.com/willianjusten/awesome-audio-visualization). Layout inspired by [Alex Permyakov's CodePen](https://codepen.io/alexdevp/full/RNELPV).
 
-![Web Player](https://i.imgur.com/ApMUQE9.png)
+## Features
 
-[Demo](https://dazzling-jang-471a34.netlify.com/)
+- Circular audio frequency visualizer rendered on Canvas
+- Streaming audio loading via Web Workers for smooth playback
+- Partial loading — starts playing in seconds, preloads the full song in the background
+- Keyboard shortcuts (Space, N, B)
+- Configurable colors, volume, and visualization
+- Zero runtime dependencies (besides React and Lucide icons)
+- Full TypeScript support with exported types
+- CSS Modules for style isolation
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Installation
 
-And based on https://codepen.io/alexdevp/full/RNELPV - Alex Permyakov
+```bash
+npm install @awesome-web-projects/react-player
+```
 
-## About the Project
+## Usage
 
-A web player build with react and web audio api.
+```tsx
+import { AudioPlayer } from '@awesome-web-projects/react-player';
+import '@awesome-web-projects/react-player/styles.css';
 
-The layout was inspired by `Alex Permyakov` example in codepen and the audio processing was write from zero.
+function App() {
+  return (
+    <AudioPlayer
+      tracks={[
+        { name: 'My Song', artist: 'Artist', url: '/song.mp3' },
+        { name: 'Another', artist: 'Band', url: '/another.mp3' },
+      ]}
+      initialVolume={0.5}
+      enableKeyboard
+      enableVisualization
+      visualizerColor="rgba(97, 218, 251, 0.8)"
+      onTrackChange={(track, index) => console.log('Now playing:', track.name)}
+    />
+  );
+}
+```
 
-The player loads the song with `web streams` to give a better experience to user and improve performance;
+## Props
 
-The project is open source and can be used as example of `web audio api and canvas visualization`.
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `tracks` | `Track[]` | *required* | Array of tracks to play |
+| `thread` | `'main' \| 'worker'` | `'worker'` | Audio fetching strategy |
+| `initialVolume` | `number` | `0.5` | Initial volume (0-1) |
+| `enableKeyboard` | `boolean` | `true` | Enable keyboard shortcuts |
+| `enableVisualization` | `boolean` | `true` | Enable canvas visualizer |
+| `visualizerColor` | `string` | `'rgba(97, 218, 251, 0.8)'` | Primary color for the visualizer |
+| `className` | `string` | — | Additional CSS class |
+| `onTrackChange` | `(track, index) => void` | — | Called when track changes |
+| `onPlayStateChange` | `(playing) => void` | — | Called on play/pause |
+| `onTimeUpdate` | `(time, duration) => void` | — | Called as playback progresses |
 
-## Available Scripts
+### Track
 
-In the project directory, you can run:
+```typescript
+interface Track {
+  name: string;
+  artist: string;
+  url: string;
+}
+```
 
-### `yarn start | npm start`
+## Keyboard Shortcuts
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+| Key | Action |
+|-----|--------|
+| Space | Play / Pause |
+| N | Next track |
+| B | Previous track |
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+## Development
 
-### `yarn test | npm test`
+```bash
+# Install dependencies
+npm install
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Start demo dev server
+npm run dev
 
-### `yarn build | npm run build`
+# Build library
+npm run build
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+# Type check
+npm run typecheck
+```
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+## License
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+MIT

@@ -1,0 +1,8 @@
+.canvas {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  display: flex;
+  align-self: center;
+  pointer-events: none;
+}
