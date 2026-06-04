@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build:demo"
+  command = "npm install && npm run build:demo"
   publish = "dist-demo"
 
 [[redirects]]
