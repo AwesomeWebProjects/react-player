@@ -1,4 +1,11 @@
-import { AudioPlayer } from '../src';
+import { useState } from 'react';
+import {
+  AudioPlayer,
+  MinimalPlayer,
+  WaveformPlayer,
+  VinylPlayer,
+  GlassPlayer,
+} from '../src';
 import type { Track } from '../src';
 import styles from './App.module.css';
 
@@ -30,16 +37,45 @@ const tracks: Track[] = [
   },
 ];
 
+const VIEWS = ['Circular', 'Minimal', 'Waveform', 'Vinyl', 'Glass'] as const;
+type ViewName = (typeof VIEWS)[number];
+
+const sharedProps = {
+  tracks,
+  thread: 'worker' as const,
+  initialVolume: 0.5,
+  enableKeyboard: true,
+  enableVisualization: true,
+};
+
 export function App() {
+  const [view, setView] = useState<ViewName>('Circular');
+
   return (
     <div className={styles.app}>
-      <AudioPlayer
-        tracks={tracks}
-        thread="worker"
-        initialVolume={0.5}
-        enableKeyboard
-        enableVisualization
-      />
+      {/* View switcher */}
+      <nav className={styles.viewSwitcher}>
+        {VIEWS.map((v) => (
+          <button
+            key={v}
+            className={`${styles.viewBtn} ${v === view ? styles.viewBtnActive : ''}`}
+            onClick={() => setView(v)}
+            type="button"
+          >
+            {v}
+          </button>
+        ))}
+      </nav>
+
+      {/* Player views */}
+      <div className={styles.playerArea}>
+        {view === 'Circular' && <AudioPlayer {...sharedProps} />}
+        {view === 'Minimal' && <MinimalPlayer {...sharedProps} />}
+        {view === 'Waveform' && <WaveformPlayer {...sharedProps} />}
+        {view === 'Vinyl' && <VinylPlayer {...sharedProps} />}
+        {view === 'Glass' && <GlassPlayer {...sharedProps} />}
+      </div>
+
       <footer className={styles.footer}>
         <div className={styles.shortcuts}>
           <span>Space</span> Play/Pause &nbsp;|&nbsp;

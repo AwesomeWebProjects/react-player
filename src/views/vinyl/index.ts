@@ -1,0 +1,1 @@
+export { VinylPlayer } from './VinylPlayer';

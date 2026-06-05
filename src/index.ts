@@ -1,5 +1,9 @@
 // Views
 export { AudioPlayer, CircularPlayer } from './views/circular';
+export { MinimalPlayer } from './views/minimal';
+export { WaveformPlayer } from './views/waveform';
+export { VinylPlayer } from './views/vinyl';
+export { GlassPlayer } from './views/glass';
 
 // Engine hooks (for building custom UIs)
 export {
