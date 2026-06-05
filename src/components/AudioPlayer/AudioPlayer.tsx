@@ -39,6 +39,7 @@ export function AudioPlayer({
     volume: engine.volume,
     getProgress: engine.getProgress,
     isFullSong: engine.isFullSong,
+    onSeek: engine.seek,
   });
 
   // Wire up auto-advance on song end

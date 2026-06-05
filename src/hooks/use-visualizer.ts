@@ -7,6 +7,7 @@ interface VisualizerOptions {
   volume: number;
   getProgress: () => number; // called at 60fps for smooth progress
   isFullSong: boolean; // true when full song duration is known
+  onSeek?: (progress: number) => void;
 }
 
 const SCENE_PADDING = 120;
@@ -193,8 +194,6 @@ function drawStreamingIndicator(
     ctx.stroke();
     ctx.restore();
   }
-
-
 }
 
 function colorWithAlpha(color: string, alpha: number): string {
@@ -233,7 +232,10 @@ export function useVisualizer(
   const enabledRef = useRef(options.enabled);
   const getProgressRef = useRef(options.getProgress);
   const isFullSongRef = useRef(options.isFullSong);
+  const onSeekRef = useRef(options.onSeek);
   const needsInitialDraw = useRef(true);
+  const layoutRef = useRef({ cx: 0, cy: 0, sceneRadius: 0, scaleCoef: 0 });
+  const isDraggingRef = useRef(false);
 
   // Keep refs in sync
   isPlayingRef.current = options.isPlaying;
@@ -242,6 +244,7 @@ export function useVisualizer(
   enabledRef.current = options.enabled;
   getProgressRef.current = options.getProgress;
   isFullSongRef.current = options.isFullSong;
+  onSeekRef.current = options.onSeek;
 
   useEffect(() => {
     if (!options.enabled) return;
@@ -266,13 +269,73 @@ export function useVisualizer(
     };
 
     let layout = configureSize();
+    layoutRef.current = layout;
 
     const onResize = () => {
       layout = configureSize();
+      layoutRef.current = layout;
       needsInitialDraw.current = true;
     };
 
     window.addEventListener("resize", onResize);
+
+    // Seek interaction: click/drag on the progress arc
+    const canvasToProgress = (e: MouseEvent): number | null => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const mx = (e.clientX - rect.left) * scaleX;
+      const my = (e.clientY - rect.top) * scaleY;
+
+      const { cx: lCx, cy: lCy, sceneRadius: lR } = layoutRef.current;
+      const trackerR = lR - (TRACKER_INNER_DELTA + TRACKER_LINE_WIDTH / 2);
+
+      const dx = mx - lCx;
+      const dy = my - lCy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Only respond if click is near the tracker ring (within 20px tolerance)
+      if (Math.abs(dist - trackerR) > 20) return null;
+
+      // atan2 gives angle from positive X axis; our arc starts at top (-PI/2)
+      let angle = Math.atan2(dy, dx) + Math.PI / 2;
+      if (angle < 0) angle += Math.PI * 2;
+      return angle / (Math.PI * 2);
+    };
+
+    const onMouseDown = (e: MouseEvent) => {
+      if (!isFullSongRef.current) return;
+      const progress = canvasToProgress(e);
+      if (progress !== null) {
+        isDraggingRef.current = true;
+        onSeekRef.current?.(progress);
+      }
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const mx = (e.clientX - rect.left) * scaleX;
+      const my = (e.clientY - rect.top) * scaleY;
+
+      const { cx: lCx, cy: lCy } = layoutRef.current;
+      const dx = mx - lCx;
+      const dy = my - lCy;
+
+      let angle = Math.atan2(dy, dx) + Math.PI / 2;
+      if (angle < 0) angle += Math.PI * 2;
+      onSeekRef.current?.(angle / (Math.PI * 2));
+    };
+
+    const onMouseUp = () => {
+      isDraggingRef.current = false;
+    };
+
+    canvas.addEventListener("mousedown", onMouseDown);
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
 
     const render = () => {
       if (!enabledRef.current) return;
@@ -349,6 +412,9 @@ export function useVisualizer(
         rafRef.current = null;
       }
       window.removeEventListener("resize", onResize);
+      canvas.removeEventListener("mousedown", onMouseDown);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     };
   }, [canvasRef, analyserNode, frequencyData, options.enabled]);
 }

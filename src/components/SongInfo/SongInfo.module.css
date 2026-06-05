@@ -4,6 +4,8 @@
   z-index: 2;
   top: 2rem;
   width: 100%;
+  pointer-events: none;
+  user-select: none;
 }
 
 .artist {

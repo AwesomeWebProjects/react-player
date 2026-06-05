@@ -26,6 +26,7 @@ export interface AudioEngineState {
   loadAndPlay: (url: string) => void;
   play: () => void;
   pause: () => void;
+  seek: (progress: number) => void;
   setVolume: (v: number) => void;
 }
 
@@ -266,6 +267,14 @@ export function useAudioEngine(
     return engineRef.current?.getProgress() ?? 0;
   }, []);
 
+  const seek = useCallback((progress: number) => {
+    const engine = engineRef.current;
+    if (!engine) return;
+    const dur = engine.getDuration();
+    if (dur <= 0) return;
+    engine.seek(Math.max(0, Math.min(1, progress)) * dur);
+  }, []);
+
   const setVolume = useCallback((v: number) => {
     engineRef.current?.setVolume(v);
     setVolumeState(v);
@@ -285,6 +294,7 @@ export function useAudioEngine(
     loadAndPlay,
     play,
     pause,
+    seek,
     setVolume,
     // Expose setSongEndCallback so the parent can wire it
     ...({ _setSongEndCallback: setSongEndCallback } as Record<string, unknown>),

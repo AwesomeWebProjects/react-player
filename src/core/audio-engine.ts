@@ -146,6 +146,28 @@ export class AudioEngine {
     }
   }
 
+  seek(time: number): void {
+    if (!this.audioContext || !this.analyser || !this.gainNode) return;
+
+    const buffer = this.currentSource?.buffer;
+    if (!buffer) return;
+
+    const clampedTime = Math.max(0, Math.min(time, buffer.duration));
+
+    this.disconnectSource();
+
+    const source = this.audioContext.createBufferSource();
+    source.buffer = buffer;
+    this.currentSource = source;
+
+    source.connect(this.analyser);
+    this.analyser.connect(this.gainNode);
+    this.gainNode.connect(this.audioContext.destination);
+
+    this.loadOffsetTime = this.audioContext.currentTime - clampedTime;
+    source.start(0, clampedTime);
+  }
+
   suspend(): void {
     this.audioContext?.suspend();
   }
