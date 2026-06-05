@@ -1,8 +1,10 @@
 .loader {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
 }
 
 .loader div {
@@ -19,17 +21,21 @@
 
 @keyframes loader {
   0% {
-    top: 28px;
-    left: 28px;
+    top: 50%;
+    left: 50%;
     width: 0;
     height: 0;
+    margin-top: 0;
+    margin-left: 0;
     opacity: 1;
   }
   100% {
-    top: -1px;
-    left: -1px;
-    width: 58px;
-    height: 58px;
+    top: 50%;
+    left: 50%;
+    width: 70px;
+    height: 70px;
+    margin-top: -35px;
+    margin-left: -35px;
     opacity: 0;
   }
 }
