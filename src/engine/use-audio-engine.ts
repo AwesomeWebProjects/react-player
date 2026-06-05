@@ -1,10 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { AudioEngine } from '../core/audio-engine';
+import { AudioEngine } from './audio-engine';
 import {
   fetchAudioStream,
   fetchAudioXHR,
   hasStreamSupport,
-} from '../core/audio-loader';
+} from './audio-loader';
 import type { WorkerResponse } from '../types';
 
 interface AudioEngineOptions {
@@ -102,7 +102,7 @@ export function useAudioEngine(
   useEffect(() => {
     if (options.thread === 'worker') {
       const worker = new Worker(
-        new URL('../core/audio-worker.ts', import.meta.url),
+        new URL('./audio-worker.ts', import.meta.url),
         { type: 'module' },
       );
 

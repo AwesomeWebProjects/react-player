@@ -1,14 +1,14 @@
 import { useRef, useEffect, useCallback, useMemo } from 'react';
 import type { AudioPlayerProps } from '../../types';
-import { useAudioEngine } from '../../hooks/use-audio-engine';
-import { usePlaylist } from '../../hooks/use-playlist';
-import { useVisualizer } from '../../hooks/use-visualizer';
-import { usePlaybackTime } from '../../hooks/use-playback-time';
-import { useKeyboard } from '../../hooks/use-keyboard';
-import { Controls } from '../Controls/Controls';
-import { VolumeControl } from '../VolumeControl/VolumeControl';
-import { SongInfo } from '../SongInfo/SongInfo';
-import { Visualizer } from '../Visualizer/Visualizer';
+import { useAudioEngine } from '../../engine/use-audio-engine';
+import { usePlaylist } from '../../engine/use-playlist';
+import { usePlaybackTime } from '../../engine/use-playback-time';
+import { useKeyboard } from '../../engine/use-keyboard';
+import { useVisualizer } from './use-visualizer';
+import { Controls } from './Controls';
+import { VolumeControl } from './VolumeControl';
+import { SongInfo } from './SongInfo';
+import { Visualizer } from './Visualizer';
 import styles from './AudioPlayer.module.css';
 
 const DEFAULT_COLOR = 'rgba(97, 218, 251, 0.8)';

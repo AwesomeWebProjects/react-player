@@ -1,5 +1,5 @@
 import { Play, Pause, SkipForward, SkipBack } from 'lucide-react';
-import { Loader } from '../Loader/Loader';
+import { Loader } from './Loader';
 import styles from './Controls.module.css';
 
 interface ControlsProps {
