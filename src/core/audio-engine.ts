@@ -31,6 +31,12 @@ export class AudioEngine {
     return this.currentSource?.buffer?.duration ?? 0;
   }
 
+  getProgress(): number {
+    const dur = this.getDuration();
+    if (dur <= 0) return 0;
+    return Math.min(1, this.getCurrentTime() / dur);
+  }
+
   getVolume(): number {
     return this.gainNode?.gain.value ?? 0.5;
   }

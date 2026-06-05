@@ -37,6 +37,8 @@ export function AudioPlayer({
     enabled: enableVisualization,
     isPlaying: engine.isPlaying,
     volume: engine.volume,
+    getProgress: engine.getProgress,
+    isFullSong: engine.isFullSong,
   });
 
   // Wire up auto-advance on song end

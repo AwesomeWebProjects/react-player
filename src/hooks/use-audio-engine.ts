@@ -16,18 +16,19 @@ export interface AudioEngineState {
   isReady: boolean;
   isPlaying: boolean;
   isLoading: boolean;
+  isFullSong: boolean;
   volume: number;
   currentTime: number;
   duration: number;
   analyserNode: AnalyserNode | null;
   frequencyData: Uint8Array<ArrayBuffer> | null;
+  getProgress: () => number;
   loadAndPlay: (url: string) => void;
   play: () => void;
   pause: () => void;
   setVolume: (v: number) => void;
 }
 
-const PRELOAD_THRESHOLD = 3.5; // seconds before end of fragment to start preload
 const AUTO_ADVANCE_THRESHOLD = 1.5; // seconds before end to trigger next song
 
 export function useAudioEngine(
@@ -49,6 +50,7 @@ export function useAudioEngine(
   const [volume, setVolumeState] = useState(options.initialVolume);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isFullSong, setIsFullSong] = useState(false);
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
   const [frequencyData, setFrequencyData] = useState<Uint8Array<ArrayBuffer> | null>(null);
 
@@ -81,24 +83,14 @@ export function useAudioEngine(
       setCurrentTime(ct);
       setDuration(dur);
 
-      // Song context management
-      if (dur > 0 && !eng.isContextSuspended()) {
-        if (
-          ct >= dur - PRELOAD_THRESHOLD &&
-          !isFullSongRef.current &&
-          !isPreloadingRef.current &&
-          canPreloadRef.current
-        ) {
-          // Time to preload the full song
-          isPreloadingRef.current = true;
-          triggerPreload();
-        } else if (
-          isFullSongRef.current &&
-          ct >= dur - AUTO_ADVANCE_THRESHOLD
-        ) {
-          // Song is about to end, advance
-          onSongEndRef.current?.();
-        }
+      // Song context management: auto-advance when near the end
+      if (
+        dur > 0 &&
+        !eng.isContextSuspended() &&
+        isFullSongRef.current &&
+        ct >= dur - AUTO_ADVANCE_THRESHOLD
+      ) {
+        onSongEndRef.current?.();
       }
     }, 300);
 
@@ -126,6 +118,16 @@ export function useAudioEngine(
               setIsLoading(false);
               canPreloadRef.current = true;
               isFullSongRef.current = playingFullMusic;
+              setIsFullSong(playingFullMusic);
+
+              // Immediately start preloading the full song
+              if (!playingFullMusic && !isPreloadingRef.current) {
+                isPreloadingRef.current = true;
+                workerRef.current?.postMessage({
+                  type: 'preload',
+                  data: { playingFullMusic: false, all: true },
+                });
+              }
             })
             .catch(console.error);
         } else if (actionType === 'preload') {
@@ -136,6 +138,7 @@ export function useAudioEngine(
                 setIsPlaying(true);
                 isPreloadingRef.current = false;
                 isFullSongRef.current = true;
+                setIsFullSong(true);
                 canPreloadRef.current = false;
               })
               .catch(console.error);
@@ -176,6 +179,7 @@ export function useAudioEngine(
               setIsPlaying(true);
               isPreloadingRef.current = false;
               isFullSongRef.current = true;
+              setIsFullSong(true);
               canPreloadRef.current = false;
             });
           }
@@ -188,6 +192,7 @@ export function useAudioEngine(
     (url: string) => {
       currentUrlRef.current = url;
       isFullSongRef.current = false;
+      setIsFullSong(false);
       canPreloadRef.current = true;
       isPreloadingRef.current = false;
       preloadFnRef.current = null;
@@ -202,10 +207,11 @@ export function useAudioEngine(
         });
       } else if (hasStreamSupport) {
         fetchAudioStream(url)
-          .then(({ buffer, isFullSong, preloadFn }) => {
+          .then(({ buffer, isFullSong: fullSong, preloadFn }) => {
             if (currentUrlRef.current !== url) return; // stale
             preloadFnRef.current = preloadFn;
-            isFullSongRef.current = isFullSong;
+            isFullSongRef.current = fullSong;
+            setIsFullSong(fullSong);
             return engine.decodeAndPlay(buffer);
           })
           .then(() => {
@@ -213,6 +219,12 @@ export function useAudioEngine(
             setIsPlaying(true);
             setIsLoading(false);
             canPreloadRef.current = true;
+
+            // Immediately start preloading the full song
+            if (!isFullSongRef.current && preloadFnRef.current && !isPreloadingRef.current) {
+              isPreloadingRef.current = true;
+              triggerPreload();
+            }
           })
           .catch(console.error);
       } else {
@@ -220,6 +232,7 @@ export function useAudioEngine(
           .then(({ buffer }) => {
             if (currentUrlRef.current !== url) return;
             isFullSongRef.current = true;
+            setIsFullSong(true);
             return engine.decodeAndPlay(buffer);
           })
           .then(() => {
@@ -249,6 +262,10 @@ export function useAudioEngine(
     }
   }, []);
 
+  const getProgress = useCallback((): number => {
+    return engineRef.current?.getProgress() ?? 0;
+  }, []);
+
   const setVolume = useCallback((v: number) => {
     engineRef.current?.setVolume(v);
     setVolumeState(v);
@@ -258,11 +275,13 @@ export function useAudioEngine(
     isReady,
     isPlaying,
     isLoading,
+    isFullSong,
     volume,
     currentTime,
     duration,
     analyserNode,
     frequencyData,
+    getProgress,
     loadAndPlay,
     play,
     pause,

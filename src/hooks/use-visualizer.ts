@@ -1,10 +1,12 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from "react";
 
 interface VisualizerOptions {
   color: string;
   enabled: boolean;
   isPlaying: boolean;
   volume: number;
+  getProgress: () => number; // called at 60fps for smooth progress
+  isFullSong: boolean; // true when full song duration is known
 }
 
 const SCENE_PADDING = 120;
@@ -55,8 +57,7 @@ function computeTicks(
     if (volume === 0) {
       delta = 0;
     } else if (volume <= 0.5) {
-      delta =
-        ((freq - LESSER * coef) * scaleCoef * volume) / 0.5 / 2;
+      delta = ((freq - LESSER * coef) * scaleCoef * volume) / 0.5 / 2;
     } else {
       delta = ((freq - LESSER * coef) * scaleCoef * volume) / 1;
     }
@@ -90,7 +91,7 @@ function drawTick(
   const gradient = ctx.createLinearGradient(dx1, dy1, dx2, dy2);
   gradient.addColorStop(0, color);
   gradient.addColorStop(0.6, color);
-  gradient.addColorStop(1, '#F5F5F5');
+  gradient.addColorStop(1, "#F5F5F5");
 
   ctx.beginPath();
   ctx.strokeStyle = gradient;
@@ -107,31 +108,107 @@ function drawEdging(
   sceneRadius: number,
   color: string,
 ): void {
-  const innerDelta = 20;
-  const lineWidth = 7;
-  const offset = lineWidth / 2;
+  const trackerR = sceneRadius - (TRACKER_INNER_DELTA + TRACKER_LINE_WIDTH / 2);
 
   ctx.save();
   ctx.beginPath();
-
   ctx.strokeStyle = colorWithAlpha(color, 0.5);
-
   ctx.lineWidth = 1;
-  ctx.arc(cx, cy, sceneRadius - innerDelta - offset, 0, Math.PI * 2, false);
+  ctx.arc(cx, cy, trackerR, 0, Math.PI * 2, false);
   ctx.stroke();
   ctx.restore();
 }
 
+const TRACKER_INNER_DELTA = 20;
+const TRACKER_LINE_WIDTH = 3;
+
+function drawTracker(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  sceneRadius: number,
+  color: string,
+  progress: number,
+): void {
+  const trackerR = sceneRadius - (TRACKER_INNER_DELTA + TRACKER_LINE_WIDTH / 2);
+  const angle = progress * 2 * Math.PI;
+
+  if (angle <= 0) return;
+
+  // Draw progress arc
+  ctx.save();
+  ctx.strokeStyle = colorWithAlpha(color, 0.8);
+  ctx.beginPath();
+  ctx.lineWidth = TRACKER_LINE_WIDTH;
+  ctx.lineCap = "round";
+  ctx.arc(cx, cy, trackerR, -Math.PI / 2, -Math.PI / 2 + angle, false);
+  ctx.stroke();
+  ctx.restore();
+
+  // Draw position dot
+  const dotAngle = -Math.PI / 2 + angle;
+  const dotX = cx + trackerR * Math.cos(dotAngle);
+  const dotY = cy + trackerR * Math.sin(dotAngle);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.fillStyle = colorWithAlpha(color, 0.9);
+  ctx.arc(dotX, dotY, 5, 0, Math.PI * 2, false);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawStreamingIndicator(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  sceneRadius: number,
+  color: string,
+  timestamp: number,
+): void {
+  const trackerR = sceneRadius - (TRACKER_INNER_DELTA + TRACKER_LINE_WIDTH / 2);
+
+  const speed = 0.0016;
+  const baseAngle = (timestamp * speed) % (Math.PI * 2);
+  const arcLength = Math.PI * 0.8;
+  const steps = 50;
+  const stepSize = arcLength / steps;
+
+  // Draw the arc as a series of tiny segments with fading opacity
+  // to create a comet-tail / light-trail effect
+  for (let i = 0; i < steps; i++) {
+    const t = i / steps; // 0 = tail, 1 = head
+    const opacity = t * t * 0.9; // quadratic fade-in toward the head
+    const startAngle = baseAngle + i * stepSize;
+    const endAngle = startAngle + stepSize + 0.005; // tiny overlap to avoid gaps
+
+    ctx.save();
+    ctx.strokeStyle = colorWithAlpha(color, opacity);
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.shadowColor = colorWithAlpha(color, opacity * 0.8);
+    ctx.shadowBlur = 12 * t;
+    ctx.beginPath();
+    ctx.arc(cx, cy, trackerR, startAngle, endAngle, false);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+
+}
+
 function colorWithAlpha(color: string, alpha: number): string {
   // hex: #rrggbb
-  if (color.startsWith('#')) {
+  if (color.startsWith("#")) {
     const r = parseInt(color.slice(1, 3), 16);
     const g = parseInt(color.slice(3, 5), 16);
     const b = parseInt(color.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
   // rgba(r, g, b, a) — replace existing alpha
-  const rgbaMatch = color.match(/^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*[\d.]+\s*\)$/);
+  const rgbaMatch = color.match(
+    /^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*[\d.]+\s*\)$/,
+  );
   if (rgbaMatch) {
     return `rgba(${rgbaMatch[1]}, ${rgbaMatch[2]}, ${rgbaMatch[3]}, ${alpha})`;
   }
@@ -154,6 +231,8 @@ export function useVisualizer(
   const volumeRef = useRef(options.volume);
   const colorRef = useRef(options.color);
   const enabledRef = useRef(options.enabled);
+  const getProgressRef = useRef(options.getProgress);
+  const isFullSongRef = useRef(options.isFullSong);
   const needsInitialDraw = useRef(true);
 
   // Keep refs in sync
@@ -161,6 +240,8 @@ export function useVisualizer(
   volumeRef.current = options.volume;
   colorRef.current = options.color;
   enabledRef.current = options.enabled;
+  getProgressRef.current = options.getProgress;
+  isFullSongRef.current = options.isFullSong;
 
   useEffect(() => {
     if (!options.enabled) return;
@@ -168,7 +249,7 @@ export function useVisualizer(
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const configureSize = () => {
@@ -191,7 +272,7 @@ export function useVisualizer(
       needsInitialDraw.current = true;
     };
 
-    window.addEventListener('resize', onResize);
+    window.addEventListener("resize", onResize);
 
     const render = () => {
       if (!enabledRef.current) return;
@@ -231,6 +312,28 @@ export function useVisualizer(
           colorRef.current,
         );
 
+        // Draw tracker
+        const progress = getProgressRef.current();
+        if (isFullSongRef.current) {
+          drawTracker(
+            ctx,
+            layout.cx,
+            layout.cy,
+            layout.sceneRadius,
+            colorRef.current,
+            progress,
+          );
+        } else if (progress > 0) {
+          drawStreamingIndicator(
+            ctx,
+            layout.cx,
+            layout.cy,
+            layout.sceneRadius,
+            colorRef.current,
+            performance.now(),
+          );
+        }
+
         needsInitialDraw.current = false;
       }
 
@@ -245,7 +348,7 @@ export function useVisualizer(
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
-      window.removeEventListener('resize', onResize);
+      window.removeEventListener("resize", onResize);
     };
   }, [canvasRef, analyserNode, frequencyData, options.enabled]);
 }
