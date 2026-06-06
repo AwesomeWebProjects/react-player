@@ -1,0 +1,9 @@
+src/
+demo/
+node_modules/
+dist-demo/
+*.local
+.DS_Store
+.git/
+tsconfig.json
+vite.config.ts

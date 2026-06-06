@@ -45,6 +45,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
+    "@awesome-web-projects/audio-engine": "^1.0.0",
     "lucide-react": "^0.511.0"
   },
   "devDependencies": {

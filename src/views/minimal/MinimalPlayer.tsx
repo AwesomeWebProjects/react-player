@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import { Play, Pause, SkipForward, SkipBack, Volume2, Volume1, VolumeX, Loader2 } from 'lucide-react';
 import type { AudioPlayerProps } from '../../types';
-import { usePlayerController } from '../shared/use-player-controller';
+import { usePlayerController } from '../../hooks/use-player-controller';
 import { useAnimatedProgressBar } from '../shared/use-animated-progress';
 import styles from './MinimalPlayer.module.css';
 
@@ -12,7 +12,7 @@ export function MinimalPlayer({
   className,
   ...props
 }: AudioPlayerProps) {
-  const { engine, playlist, time, handlePlay, handleNext, handlePrev } =
+  const { controller, time, handlePlay, handleNext, handlePrev } =
     usePlayerController(props);
 
   const trackRef = useRef<HTMLDivElement>(null);
@@ -26,12 +26,12 @@ export function MinimalPlayer({
   const applySeek = useCallback(
     (e: MouseEvent | React.MouseEvent) => {
       const track = trackRef.current;
-      if (!track || !engine.isFullSong) return;
+      if (!track || !controller.isFullSong) return;
       const rect = track.getBoundingClientRect();
       const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-      engine.seek(x / rect.width);
+      controller.seek(x / rect.width);
     },
-    [engine],
+    [controller],
   );
 
   const onProgressDown = (e: React.MouseEvent) => {
@@ -45,9 +45,9 @@ export function MinimalPlayer({
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-      engine.setVolume(x / rect.width);
+      controller.setVolume(x / rect.width);
     },
-    [engine],
+    [controller],
   );
 
   const onVolumeDown = (e: React.MouseEvent) => {
@@ -83,9 +83,9 @@ export function MinimalPlayer({
     };
   }, [applySeek, applyVolume]);
 
-  useAnimatedProgressBar(progressFillRef, engine.getProgress, engine.isFullSong, engine.isPlaying);
+  useAnimatedProgressBar(progressFillRef, controller.getProgress, controller.isFullSong, controller.isPlaying);
   const VolumeIcon =
-    engine.volume === 0 ? VolumeX : engine.volume < 1 ? Volume1 : Volume2;
+    controller.volume === 0 ? VolumeX : controller.volume < 1 ? Volume1 : Volume2;
 
   return (
     <div
@@ -103,7 +103,7 @@ export function MinimalPlayer({
           className={styles.progressFill}
           style={{ width: '0%', backgroundColor: visualizerColor }}
         />
-        {!engine.isFullSong && engine.isPlaying && (
+        {!controller.isFullSong && controller.isPlaying && (
           <div
             className={styles.progressShimmer}
             style={{
@@ -121,14 +121,14 @@ export function MinimalPlayer({
           </button>
           <button
             className={styles.playBtn}
-            onClick={engine.isPlaying ? engine.pause : handlePlay}
+            onClick={controller.isPlaying ? controller.pause : handlePlay}
             type="button"
-            aria-label={engine.isPlaying ? 'Pause' : 'Play'}
+            aria-label={controller.isPlaying ? 'Pause' : 'Play'}
             style={{ borderColor: visualizerColor }}
           >
-            {engine.isLoading ? (
+            {controller.isLoading ? (
               <Loader2 size={20} color={visualizerColor} className={styles.spin} />
-            ) : engine.isPlaying ? (
+            ) : controller.isPlaying ? (
               <Pause size={20} color={visualizerColor} fill={visualizerColor} />
             ) : (
               <Play size={20} color={visualizerColor} fill={visualizerColor} />
@@ -140,9 +140,9 @@ export function MinimalPlayer({
         </div>
 
         <div className={styles.info}>
-          <span className={styles.artist}>{playlist.currentTrack.artist}</span>
+          <span className={styles.artist}>{controller.currentTrack.artist}</span>
           <span className={styles.separator}>&mdash;</span>
-          <span className={styles.name}>{playlist.currentTrack.name}</span>
+          <span className={styles.name}>{controller.currentTrack.name}</span>
         </div>
 
         <div className={styles.right}>
@@ -152,7 +152,7 @@ export function MinimalPlayer({
               className={styles.btn}
               onClick={() => setVolumeOpen((o) => !o)}
               type="button"
-              aria-label={`Volume: ${Math.round(engine.volume * 100)}%`}
+              aria-label={`Volume: ${Math.round(controller.volume * 100)}%`}
             >
               <VolumeIcon size={18} color={visualizerColor} />
             </button>
@@ -166,14 +166,14 @@ export function MinimalPlayer({
                   <div
                     className={styles.volumeFill}
                     style={{
-                      width: `${engine.volume * 100}%`,
+                      width: `${controller.volume * 100}%`,
                       backgroundColor: visualizerColor,
                     }}
                   />
                   <div
                     className={styles.volumeThumb}
                     style={{
-                      left: `${engine.volume * 100}%`,
+                      left: `${controller.volume * 100}%`,
                       backgroundColor: visualizerColor,
                     }}
                   />

@@ -1,4 +1,4 @@
-import type { Track } from '../../types';
+import type { Track } from '@awesome-web-projects/audio-engine';
 import styles from './SongInfo.module.css';
 
 interface SongInfoProps {

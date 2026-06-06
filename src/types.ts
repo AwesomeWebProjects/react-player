@@ -1,8 +1,4 @@
-export interface Track {
-  name: string;
-  artist: string;
-  url: string;
-}
+import type { Track } from '@awesome-web-projects/audio-engine';
 
 export interface AudioPlayerProps {
   tracks: Track[];
@@ -16,25 +12,4 @@ export interface AudioPlayerProps {
   onTrackChange?: (track: Track, index: number) => void;
   onPlayStateChange?: (playing: boolean) => void;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
-}
-
-export interface WorkerMessage {
-  type: 'audio' | 'preload';
-  data: {
-    url?: string;
-    playingFullMusic: boolean;
-    all?: boolean;
-  };
-}
-
-export interface WorkerResponse {
-  response: ArrayBuffer;
-  actionType: 'load' | 'preload';
-  playingFullMusic: boolean;
-}
-
-export interface StreamParams {
-  all: boolean;
-  sec?: number;
-  amount?: number;
 }

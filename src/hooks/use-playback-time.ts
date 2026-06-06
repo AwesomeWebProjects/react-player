@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { formatTime } from '../utils/format-time';
+import { formatTime } from '@awesome-web-projects/audio-engine';
 
 export interface PlaybackTimeState {
   formattedTime: string;

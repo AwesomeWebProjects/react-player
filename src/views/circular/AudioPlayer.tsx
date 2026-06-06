@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import type { AudioPlayerProps } from '../../types';
-import { usePlayerController } from '../shared/use-player-controller';
+import { usePlayerController } from '../../hooks/use-player-controller';
 import { useVisualizer } from './use-visualizer';
 import { Controls } from './Controls';
 import { VolumeControl } from './VolumeControl';
@@ -17,17 +17,17 @@ export function AudioPlayer({
   ...props
 }: AudioPlayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { engine, playlist, time, handlePlay, handleNext, handlePrev } =
+  const { controller, time, handlePlay, handleNext, handlePrev } =
     usePlayerController(props);
 
-  useVisualizer(canvasRef, engine.analyserNode, engine.frequencyData, {
+  useVisualizer(canvasRef, controller.analyserNode, controller.frequencyData, {
     color: visualizerColor,
     enabled: enableVisualization,
-    isPlaying: engine.isPlaying,
-    volume: engine.volume,
-    getProgress: engine.getProgress,
-    isFullSong: engine.isFullSong,
-    onSeek: engine.seek,
+    isPlaying: controller.isPlaying,
+    volume: controller.volume,
+    getProgress: controller.getProgress,
+    isFullSong: controller.isFullSong,
+    onSeek: controller.seek,
   });
 
   return (
@@ -37,21 +37,21 @@ export function AudioPlayer({
     >
       <div className={styles.player}>
         <Visualizer ref={canvasRef} />
-        <SongInfo track={playlist.currentTrack} />
+        <SongInfo track={controller.currentTrack} />
         <Controls
-          isPlaying={engine.isPlaying}
-          isLoading={engine.isLoading}
+          isPlaying={controller.isPlaying}
+          isLoading={controller.isLoading}
           color={visualizerColor}
           onPlay={handlePlay}
-          onPause={engine.pause}
+          onPause={controller.pause}
           onNext={handleNext}
           onPrev={handlePrev}
         />
         <div className={styles.footer}>
           <VolumeControl
-            volume={engine.volume}
+            volume={controller.volume}
             color={visualizerColor}
-            onChange={engine.setVolume}
+            onChange={controller.setVolume}
           />
           <div className={styles.time}>{time.formattedTime}</div>
         </div>

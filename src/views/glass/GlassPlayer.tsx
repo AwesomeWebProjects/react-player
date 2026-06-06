@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import { Play, Pause, SkipForward, SkipBack, Volume2, Volume1, VolumeX, Loader2 } from 'lucide-react';
 import type { AudioPlayerProps } from '../../types';
-import { usePlayerController } from '../shared/use-player-controller';
+import { usePlayerController } from '../../hooks/use-player-controller';
 import { useAnimatedProgressBar } from '../shared/use-animated-progress';
 import { useGlassVisualizer } from './use-glass-visualizer';
 import styles from './GlassPlayer.module.css';
@@ -15,7 +15,7 @@ export function GlassPlayer({
   ...props
 }: AudioPlayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { engine, playlist, time, handlePlay, handleNext, handlePrev } =
+  const { controller, time, handlePlay, handleNext, handlePrev } =
     usePlayerController(props);
 
   const [volumeOpen, setVolumeOpen] = useState(false);
@@ -27,21 +27,21 @@ export function GlassPlayer({
   const progressFillRef = useRef<HTMLDivElement>(null);
   const progressDragging = useRef(false);
 
-  useGlassVisualizer(canvasRef, engine.analyserNode, engine.frequencyData, {
+  useGlassVisualizer(canvasRef, controller.analyserNode, controller.frequencyData, {
     color: visualizerColor,
     enabled: enableVisualization,
-    isPlaying: engine.isPlaying,
+    isPlaying: controller.isPlaying,
   });
 
   const applySeek = useCallback(
     (e: MouseEvent | React.MouseEvent) => {
       const el = progressRef.current;
-      if (!el || !engine.isFullSong) return;
+      if (!el || !controller.isFullSong) return;
       const rect = el.getBoundingClientRect();
       const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-      engine.seek(x / rect.width);
+      controller.seek(x / rect.width);
     },
-    [engine],
+    [controller],
   );
 
   const applyVolume = useCallback(
@@ -50,9 +50,9 @@ export function GlassPlayer({
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-      engine.setVolume(x / rect.width);
+      controller.setVolume(x / rect.width);
     },
-    [engine],
+    [controller],
   );
 
   useEffect(() => {
@@ -79,9 +79,9 @@ export function GlassPlayer({
     };
   }, [applySeek, applyVolume]);
 
-  useAnimatedProgressBar(progressFillRef, engine.getProgress, engine.isFullSong, engine.isPlaying);
+  useAnimatedProgressBar(progressFillRef, controller.getProgress, controller.isFullSong, controller.isPlaying);
   const VolumeIcon =
-    engine.volume === 0 ? VolumeX : engine.volume < 1 ? Volume1 : Volume2;
+    controller.volume === 0 ? VolumeX : controller.volume < 1 ? Volume1 : Volume2;
 
   return (
     <div
@@ -95,8 +95,8 @@ export function GlassPlayer({
       <div className={styles.overlay}>
         {/* Song info */}
         <div className={styles.info}>
-          <div className={styles.artist}>{playlist.currentTrack.artist}</div>
-          <div className={styles.name}>{playlist.currentTrack.name}</div>
+          <div className={styles.artist}>{controller.currentTrack.artist}</div>
+          <div className={styles.name}>{controller.currentTrack.name}</div>
         </div>
 
         {/* Controls */}
@@ -106,13 +106,13 @@ export function GlassPlayer({
           </button>
           <button
             className={styles.playBtn}
-            onClick={engine.isPlaying ? engine.pause : handlePlay}
+            onClick={controller.isPlaying ? controller.pause : handlePlay}
             type="button"
-            aria-label={engine.isPlaying ? 'Pause' : 'Play'}
+            aria-label={controller.isPlaying ? 'Pause' : 'Play'}
           >
-            {engine.isLoading ? (
+            {controller.isLoading ? (
               <Loader2 size={28} color="rgba(255,255,255,0.9)" className={styles.spin} />
-            ) : engine.isPlaying ? (
+            ) : controller.isPlaying ? (
               <Pause size={28} color="rgba(255,255,255,0.9)" fill="rgba(255,255,255,0.9)" />
             ) : (
               <Play size={28} color="rgba(255,255,255,0.9)" fill="rgba(255,255,255,0.9)" />
@@ -141,7 +141,7 @@ export function GlassPlayer({
             boxShadow: `0 0 10px ${visualizerColor}`,
           }}
         />
-        {!engine.isFullSong && engine.isPlaying && (
+        {!controller.isFullSong && controller.isPlaying && (
           <div
             className={styles.progressShimmer}
             style={{ background: `linear-gradient(90deg, transparent, ${visualizerColor}, transparent)` }}
@@ -157,15 +157,15 @@ export function GlassPlayer({
               className={styles.btn}
               onClick={() => setVolumeOpen((o) => !o)}
               type="button"
-              aria-label={`Volume: ${Math.round(engine.volume * 100)}%`}
+              aria-label={`Volume: ${Math.round(controller.volume * 100)}%`}
             >
               <VolumeIcon size={18} color="rgba(255,255,255,0.7)" />
             </button>
             {volumeOpen && (
               <div className={styles.volumeSlider}>
                 <div ref={volumeRef} className={styles.volumeTrack} onMouseDown={(e) => { volumeDragging.current = true; applyVolume(e); }}>
-                  <div className={styles.volumeFill} style={{ width: `${engine.volume * 100}%`, backgroundColor: visualizerColor }} />
-                  <div className={styles.volumeThumb} style={{ left: `${engine.volume * 100}%`, backgroundColor: visualizerColor }} />
+                  <div className={styles.volumeFill} style={{ width: `${controller.volume * 100}%`, backgroundColor: visualizerColor }} />
+                  <div className={styles.volumeThumb} style={{ left: `${controller.volume * 100}%`, backgroundColor: visualizerColor }} />
                 </div>
               </div>
             )}

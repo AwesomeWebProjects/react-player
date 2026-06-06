@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
 import { Play, Pause, SkipForward, SkipBack, Volume2, Volume1, VolumeX, Loader2 } from 'lucide-react';
 import type { AudioPlayerProps } from '../../types';
-import { usePlayerController } from '../shared/use-player-controller';
+import { usePlayerController } from '../../hooks/use-player-controller';
 import { useWaveformVisualizer } from './use-waveform-visualizer';
 import styles from './WaveformPlayer.module.css';
 
@@ -14,7 +14,7 @@ export function WaveformPlayer({
   ...props
 }: AudioPlayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { engine, playlist, time, handlePlay, handleNext, handlePrev } =
+  const { controller, time, handlePlay, handleNext, handlePrev } =
     usePlayerController(props);
 
   const [volumeOpen, setVolumeOpen] = useState(false);
@@ -22,13 +22,13 @@ export function WaveformPlayer({
   const volumeContainerRef = useRef<HTMLDivElement>(null);
   const volumeDragging = useRef(false);
 
-  useWaveformVisualizer(canvasRef, engine.analyserNode, engine.frequencyData, {
+  useWaveformVisualizer(canvasRef, controller.analyserNode, controller.frequencyData, {
     color: visualizerColor,
     enabled: enableVisualization,
-    isPlaying: engine.isPlaying,
-    getProgress: engine.getProgress,
-    isFullSong: engine.isFullSong,
-    onSeek: engine.seek,
+    isPlaying: controller.isPlaying,
+    getProgress: controller.getProgress,
+    isFullSong: controller.isFullSong,
+    onSeek: controller.seek,
   });
 
   const applyVolume = useCallback(
@@ -37,9 +37,9 @@ export function WaveformPlayer({
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-      engine.setVolume(x / rect.width);
+      controller.setVolume(x / rect.width);
     },
-    [engine],
+    [controller],
   );
 
   const onVolumeDown = (e: React.MouseEvent) => {
@@ -68,7 +68,7 @@ export function WaveformPlayer({
   }, [applyVolume]);
 
   const VolumeIcon =
-    engine.volume === 0 ? VolumeX : engine.volume < 1 ? Volume1 : Volume2;
+    controller.volume === 0 ? VolumeX : controller.volume < 1 ? Volume1 : Volume2;
 
   return (
     <div
@@ -79,8 +79,8 @@ export function WaveformPlayer({
 
       <div className={styles.bottom}>
         <div className={styles.infoCol}>
-          <div className={styles.artist}>{playlist.currentTrack.artist}</div>
-          <div className={styles.name}>{playlist.currentTrack.name}</div>
+          <div className={styles.artist}>{controller.currentTrack.artist}</div>
+          <div className={styles.name}>{controller.currentTrack.name}</div>
         </div>
 
         <div className={styles.controls}>
@@ -89,14 +89,14 @@ export function WaveformPlayer({
           </button>
           <button
             className={styles.playBtn}
-            onClick={engine.isPlaying ? engine.pause : handlePlay}
+            onClick={controller.isPlaying ? controller.pause : handlePlay}
             type="button"
-            aria-label={engine.isPlaying ? 'Pause' : 'Play'}
+            aria-label={controller.isPlaying ? 'Pause' : 'Play'}
             style={{ borderColor: visualizerColor }}
           >
-            {engine.isLoading ? (
+            {controller.isLoading ? (
               <Loader2 size={22} color={visualizerColor} className={styles.spin} />
-            ) : engine.isPlaying ? (
+            ) : controller.isPlaying ? (
               <Pause size={22} color={visualizerColor} fill={visualizerColor} />
             ) : (
               <Play size={22} color={visualizerColor} fill={visualizerColor} />
@@ -114,15 +114,15 @@ export function WaveformPlayer({
               className={styles.btn}
               onClick={() => setVolumeOpen((o) => !o)}
               type="button"
-              aria-label={`Volume: ${Math.round(engine.volume * 100)}%`}
+              aria-label={`Volume: ${Math.round(controller.volume * 100)}%`}
             >
               <VolumeIcon size={18} color={visualizerColor} />
             </button>
             {volumeOpen && (
               <div className={styles.volumeSlider}>
                 <div ref={volumeRef} className={styles.volumeTrack} onMouseDown={onVolumeDown}>
-                  <div className={styles.volumeFill} style={{ width: `${engine.volume * 100}%`, backgroundColor: visualizerColor }} />
-                  <div className={styles.volumeThumb} style={{ left: `${engine.volume * 100}%`, backgroundColor: visualizerColor }} />
+                  <div className={styles.volumeFill} style={{ width: `${controller.volume * 100}%`, backgroundColor: visualizerColor }} />
+                  <div className={styles.volumeThumb} style={{ left: `${controller.volume * 100}%`, backgroundColor: visualizerColor }} />
                 </div>
               </div>
             )}

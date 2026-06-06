@@ -1,4 +1,9 @@
-import type { StreamParams } from '../types';
+// Re-export the audio worker from the engine package.
+// This file exists so Vite can resolve the worker via import.meta.url.
+export {} from '@awesome-web-projects/audio-engine';
+
+// The actual worker code — imported side-effect style
+import type { StreamParams } from '@awesome-web-projects/audio-engine';
 
 const INITIAL_STREAM_AMOUNT = 1245184;
 const FALLBACK_CHUNK_LIMIT = 65536 * 5;
