@@ -122,6 +122,7 @@ export function usePlayerController(
     ctrl.on('trackchange', (track, index) => {
       setCurrentTrack(track);
       setCurrentIndex(index);
+      setIsFullSong(false);
       onTrackChangeRef.current?.(track, index);
     });
 
