@@ -64,6 +64,7 @@
     "build": "vite build --mode lib",
     "build:demo": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
   }
 }
