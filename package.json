@@ -4,6 +4,9 @@
   "description": "A React audio player component with circular frequency visualization powered by the Web Audio API and Canvas.",
   "author": "Daniel Barion (https://github.com/danielbarion)",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/react-player.cjs",
   "module": "./dist/react-player.js",
