@@ -87,7 +87,7 @@ export function usePlayerController(
       thread,
       initialVolume,
       workerURL: new URL(
-        '../worker/audio-worker.ts',
+        '../worker/audio-worker.js',
         import.meta.url,
       ),
     });
