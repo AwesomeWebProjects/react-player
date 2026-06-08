@@ -1,6 +1,6 @@
 {
   "name": "@awesome-web-projects/react-player",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A React audio player component with circular frequency visualization powered by the Web Audio API and Canvas.",
   "author": "Daniel Barion (https://github.com/danielbarion)",
   "license": "MIT",
